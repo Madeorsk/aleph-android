@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings for Aleph-only features. Kept out of strings.xml, which Crowdin owns. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+	<string name="content_type">Content type</string>
+	<string name="content_type_plain">Plain text</string>
+	<string name="content_type_plain_subtitle">Normal text without any formatting</string>
+	<string name="content_type_markdown">Markdown</string>
+	<string name="content_type_markdown_subtitle">Basic markdown formatting</string>
+	<string name="content_type_html">HTML</string>
+	<string name="content_type_html_subtitle">Advanced HTML formatting</string>
+</resources>

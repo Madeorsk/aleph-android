@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings for Aleph-only features. Kept out of strings.xml, which Crowdin owns. -->
+<resources>
+	<string name="content_type">Type de contenu</string>
+	<string name="content_type_plain">Texte brut</string>
+	<string name="content_type_plain_subtitle">Texte normal sans mise en forme</string>
+	<string name="content_type_markdown">Markdown</string>
+	<string name="content_type_markdown_subtitle">Mise en forme Markdown basique</string>
+	<string name="content_type_html">HTML</string>
+	<string name="content_type_html_subtitle">Mise en forme HTML avancée</string>
+</resources>
