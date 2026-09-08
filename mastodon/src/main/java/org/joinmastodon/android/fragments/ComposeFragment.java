@@ -852,7 +852,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		CreateStatus.Request req=new CreateStatus.Request();
 		req.status=text;
 		req.visibility=statusVisibility;
-		if(instance.supportsContentTypes())
+		if(contentType!=null && instance.supportsContentTypes())
 			req.contentType=contentType;
 		if(!mediaViewController.isEmpty()){
 			req.mediaIds=mediaViewController.getAttachmentIDs();
@@ -1127,7 +1127,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	}
 
 	private void updateContentTypeButton(){
-		contentTypeBtn.setImageResource(getContentTypeIcon(contentType));
+		contentTypeBtn.setImageResource(getContentTypeIcon(contentType==null ? StatusContentType.PLAIN : contentType));
 	}
 
 	private void onContentTypeClick(View v){
@@ -1150,12 +1150,11 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 			contentType=(StatusContentType) savedInstanceState.getSerializable("contentType");
 		else
 			contentType=(StatusContentType) getArguments().getSerializable("sourceContentType");
-		if(contentType==null){
-			// An existing post keeps the type it was written with, so the default only applies to new ones.
-			contentType=editingStatus==null
-					? AccountSessionManager.get(accountID).getLocalPreferences().postingDefaultContentType
-					: StatusContentType.PLAIN;
-		}
+		// A null content type is left out of the request, which hands the decision to the server: an
+		// edited post keeps the type it was stored with, and a new one gets the content type
+		// configured on the profile.
+		if(contentType==null && editingStatus==null)
+			contentType=AccountSessionManager.get(accountID).getLocalPreferences().postingDefaultContentType;
 		updateContentTypeButton();
 	}
 

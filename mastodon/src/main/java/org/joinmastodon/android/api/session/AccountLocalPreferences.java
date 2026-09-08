@@ -16,7 +16,19 @@ public class AccountLocalPreferences{
 		serverSideFiltersSupported=prefs.getBoolean("serverSideFilters", false);
 		adminReportsNotifications=prefs.getBoolean("adminReports", true);
 		adminSignupsNotifications=prefs.getBoolean("adminSignups", true);
-		postingDefaultContentType=StatusContentType.valueOf(prefs.getString("postingDefaultContentType", StatusContentType.PLAIN.name()));
+		postingDefaultContentType=readContentType();
+	}
+
+	private StatusContentType readContentType(){
+		String name=prefs.getString("postingDefaultContentType", null);
+		if(name==null)
+			return StatusContentType.PLAIN;
+		try{
+			return StatusContentType.valueOf(name);
+		}catch(IllegalArgumentException x){
+			// A type written by a newer version of the app
+			return StatusContentType.PLAIN;
+		}
 	}
 
 	public long getNotificationsPauseEndTime(){
