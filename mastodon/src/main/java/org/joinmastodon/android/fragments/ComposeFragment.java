@@ -1150,8 +1150,12 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 			contentType=(StatusContentType) savedInstanceState.getSerializable("contentType");
 		else
 			contentType=(StatusContentType) getArguments().getSerializable("sourceContentType");
-		if(contentType==null)
-			contentType=StatusContentType.PLAIN;
+		if(contentType==null){
+			// An existing post keeps the type it was written with, so the default only applies to new ones.
+			contentType=editingStatus==null
+					? AccountSessionManager.get(accountID).getLocalPreferences().postingDefaultContentType
+					: StatusContentType.PLAIN;
+		}
 		updateContentTypeButton();
 	}
 

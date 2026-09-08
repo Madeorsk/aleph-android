@@ -8,4 +8,5 @@
 	<string name="content_type_markdown_subtitle">Basic markdown formatting</string>
 	<string name="content_type_html">HTML</string>
 	<string name="content_type_html_subtitle">Advanced HTML formatting</string>
+	<string name="default_post_content_type">Posting content type</string>
 </resources>

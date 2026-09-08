@@ -8,4 +8,5 @@
 	<string name="content_type_markdown_subtitle">Mise en forme Markdown basique</string>
 	<string name="content_type_html">HTML</string>
 	<string name="content_type_html_subtitle">Mise en forme HTML avancée</string>
+	<string name="default_post_content_type">Type de contenu des publications</string>
 </resources>
