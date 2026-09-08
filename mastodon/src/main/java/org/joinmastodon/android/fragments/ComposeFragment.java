@@ -329,8 +329,8 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		});
 		spoilerBtn.setOnClickListener(v->toggleSpoiler());
 		languageBtn.setOnClickListener(v->showLanguageAlert());
+		contentTypeBtn.setOnClickListener(this::onContentTypeClick);
 		contentTypeBtn.setVisibility(instance.supportsContentTypes() ? View.VISIBLE : View.GONE);
-		updateContentTypeButton();
 		visibilityBtn.setOnClickListener(this::onVisibilityClick);
 		if(!instance.supportsQuotePostAuthoring()){
 			visibilityBtn.setAccessibilityDelegate(new View.AccessibilityDelegate(){
@@ -449,6 +449,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		mediaViewController.onSaveInstanceState(outState);
 		outState.putBoolean("hasSpoiler", hasSpoiler);
 		outState.putSerializable("visibility", statusVisibility);
+		outState.putSerializable("contentType", contentType);
 		outState.putParcelable("postLang", Parcels.wrap(postLang));
 		if(currentAutocompleteSpan!=null){
 			Editable e=mainEditText.getText();
@@ -484,6 +485,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		rootView.setClipToPadding(false);
 		if(editingStatus==null)
 			loadDefaultStatusVisibility(savedInstanceState);
+		loadContentType(savedInstanceState);
 		contentView.setSizeListener(emojiKeyboard::onContentViewSizeChanged);
 		InputMethodManager imm=getActivity().getSystemService(InputMethodManager.class);
 		mainEditText.requestFocus();
@@ -850,6 +852,8 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		CreateStatus.Request req=new CreateStatus.Request();
 		req.status=text;
 		req.visibility=statusVisibility;
+		if(instance.supportsContentTypes())
+			req.contentType=contentType;
 		if(!mediaViewController.isEmpty()){
 			req.mediaIds=mediaViewController.getAttachmentIDs();
 			if(editingStatus != null){
@@ -1098,6 +1102,22 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		}
 	}
 
+	private static int getContentTypeTitle(StatusContentType contentType){
+		return switch(contentType){
+			case PLAIN -> R.string.content_type_plain;
+			case MARKDOWN -> R.string.content_type_markdown;
+			case HTML -> R.string.content_type_html;
+		};
+	}
+
+	private static int getContentTypeSubtitle(StatusContentType contentType){
+		return switch(contentType){
+			case PLAIN -> R.string.content_type_plain_subtitle;
+			case MARKDOWN -> R.string.content_type_markdown_subtitle;
+			case HTML -> R.string.content_type_html_subtitle;
+		};
+	}
+
 	private static int getContentTypeIcon(StatusContentType contentType){
 		return switch(contentType){
 			case PLAIN -> R.drawable.ic_description_24px;
@@ -1108,6 +1128,31 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 
 	private void updateContentTypeButton(){
 		contentTypeBtn.setImageResource(getContentTypeIcon(contentType));
+	}
+
+	private void onContentTypeClick(View v){
+		ArrayList<ListItem<StatusContentType>> items=new ArrayList<>();
+		ExtendedPopupMenu menu=new ExtendedPopupMenu(getActivity(), items);
+		Consumer<ListItem<StatusContentType>> onClick=i->{
+			if(contentType!=i.parentObject){
+				contentType=i.parentObject;
+				updateContentTypeButton();
+			}
+			menu.dismiss();
+		};
+		for(StatusContentType type:StatusContentType.values())
+			items.add(new ListItem<>(getContentTypeTitle(type), getContentTypeSubtitle(type), getContentTypeIcon(type), type, onClick));
+		menu.showAsDropDown(v);
+	}
+
+	private void loadContentType(Bundle savedInstanceState){
+		if(savedInstanceState!=null)
+			contentType=(StatusContentType) savedInstanceState.getSerializable("contentType");
+		else
+			contentType=(StatusContentType) getArguments().getSerializable("sourceContentType");
+		if(contentType==null)
+			contentType=StatusContentType.PLAIN;
+		updateContentTypeButton();
 	}
 
 	private void onVisibilityClick(View v){
