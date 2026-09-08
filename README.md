@@ -1,4 +1,4 @@
-<img src="./aleph-app-icon.svg" alt="Aleph" width="128" align="right">
+<img src="./aleph-app-icon.svg" alt="Aleph" width="96">
 
 # Aleph
 
