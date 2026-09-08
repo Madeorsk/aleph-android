@@ -71,6 +71,7 @@ import org.joinmastodon.android.model.Instance;
 import org.joinmastodon.android.model.Mention;
 import org.joinmastodon.android.model.Preferences;
 import org.joinmastodon.android.model.Status;
+import org.joinmastodon.android.model.StatusContentType;
 import org.joinmastodon.android.model.StatusPrivacy;
 import org.joinmastodon.android.model.StatusQuotePolicy;
 import org.joinmastodon.android.model.viewmodel.ListItem;
@@ -150,7 +151,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	private String accountID;
 	private int charCount, charLimit, trimmedCharCount;
 
-	private ImageButton mediaBtn, pollBtn, emojiBtn, spoilerBtn, languageBtn;
+	private ImageButton mediaBtn, pollBtn, emojiBtn, spoilerBtn, languageBtn, contentTypeBtn;
 	private FrameLayout replyWrap;
 	private LinearLayout visibilityBtn;
 	private TextView visibilityText1, visibilityText2, visibilityCurrentText;
@@ -171,6 +172,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	private View sendingOverlay;
 	private WindowManager wm;
 	private StatusPrivacy statusVisibility=StatusPrivacy.PUBLIC;
+	private StatusContentType contentType=StatusContentType.PLAIN;
 	private StatusQuotePolicy statusQuotePolicy=StatusQuotePolicy.PUBLIC;
 	private ComposeAutocompleteSpan currentAutocompleteSpan;
 	private FrameLayout mainEditTextWrap;
@@ -308,6 +310,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		visibilityText1=view.findViewById(R.id.visibility_text1);
 		visibilityText2=view.findViewById(R.id.visibility_text2);
 		visibilityCurrentText=visibilityText1;
+		contentTypeBtn=view.findViewById(R.id.btn_content_type);
 		languageBtn=view.findViewById(R.id.btn_language);
 		replyWrap=view.findViewById(R.id.reply_wrap);
 		quotedPostWrap=view.findViewById(R.id.quoted_post_wrap);
@@ -326,6 +329,8 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		});
 		spoilerBtn.setOnClickListener(v->toggleSpoiler());
 		languageBtn.setOnClickListener(v->showLanguageAlert());
+		contentTypeBtn.setOnClickListener(this::onContentTypeClick);
+		contentTypeBtn.setVisibility(instance.supportsContentTypes() ? View.VISIBLE : View.GONE);
 		visibilityBtn.setOnClickListener(this::onVisibilityClick);
 		if(!instance.supportsQuotePostAuthoring()){
 			visibilityBtn.setAccessibilityDelegate(new View.AccessibilityDelegate(){
@@ -444,6 +449,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		mediaViewController.onSaveInstanceState(outState);
 		outState.putBoolean("hasSpoiler", hasSpoiler);
 		outState.putSerializable("visibility", statusVisibility);
+		outState.putSerializable("contentType", contentType);
 		outState.putParcelable("postLang", Parcels.wrap(postLang));
 		if(currentAutocompleteSpan!=null){
 			Editable e=mainEditText.getText();
@@ -479,6 +485,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		rootView.setClipToPadding(false);
 		if(editingStatus==null)
 			loadDefaultStatusVisibility(savedInstanceState);
+		loadContentType(savedInstanceState);
 		contentView.setSizeListener(emojiKeyboard::onContentViewSizeChanged);
 		InputMethodManager imm=getActivity().getSystemService(InputMethodManager.class);
 		mainEditText.requestFocus();
@@ -845,6 +852,8 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		CreateStatus.Request req=new CreateStatus.Request();
 		req.status=text;
 		req.visibility=statusVisibility;
+		if(instance.supportsContentTypes())
+			req.contentType=contentType;
 		if(!mediaViewController.isEmpty()){
 			req.mediaIds=mediaViewController.getAttachmentIDs();
 			if(editingStatus != null){
@@ -1091,6 +1100,63 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 			mainEditText.requestFocus();
 			updateCharCounter();
 		}
+	}
+
+	private static int getContentTypeTitle(StatusContentType contentType){
+		return switch(contentType){
+			case PLAIN -> R.string.content_type_plain;
+			case MARKDOWN -> R.string.content_type_markdown;
+			case HTML -> R.string.content_type_html;
+		};
+	}
+
+	private static int getContentTypeSubtitle(StatusContentType contentType){
+		return switch(contentType){
+			case PLAIN -> R.string.content_type_plain_subtitle;
+			case MARKDOWN -> R.string.content_type_markdown_subtitle;
+			case HTML -> R.string.content_type_html_subtitle;
+		};
+	}
+
+	private static int getContentTypeIcon(StatusContentType contentType){
+		return switch(contentType){
+			case PLAIN -> R.drawable.ic_description_24px;
+			case MARKDOWN -> R.drawable.ic_markdown_24px;
+			case HTML -> R.drawable.ic_code_24px;
+		};
+	}
+
+	private void updateContentTypeButton(){
+		contentTypeBtn.setImageResource(getContentTypeIcon(contentType));
+	}
+
+	private void onContentTypeClick(View v){
+		ArrayList<ListItem<StatusContentType>> items=new ArrayList<>();
+		ExtendedPopupMenu menu=new ExtendedPopupMenu(getActivity(), items);
+		Consumer<ListItem<StatusContentType>> onClick=i->{
+			if(contentType!=i.parentObject){
+				contentType=i.parentObject;
+				updateContentTypeButton();
+			}
+			menu.dismiss();
+		};
+		for(StatusContentType type:StatusContentType.values())
+			items.add(new ListItem<>(getContentTypeTitle(type), getContentTypeSubtitle(type), getContentTypeIcon(type), type, onClick));
+		menu.showAsDropDown(v);
+	}
+
+	private void loadContentType(Bundle savedInstanceState){
+		if(savedInstanceState!=null)
+			contentType=(StatusContentType) savedInstanceState.getSerializable("contentType");
+		else
+			contentType=(StatusContentType) getArguments().getSerializable("sourceContentType");
+		if(contentType==null){
+			// An existing post keeps the type it was written with, so the default only applies to new ones.
+			contentType=editingStatus==null
+					? AccountSessionManager.get(accountID).getLocalPreferences().postingDefaultContentType
+					: StatusContentType.PLAIN;
+		}
+		updateContentTypeButton();
 	}
 
 	private void onVisibilityClick(View v){

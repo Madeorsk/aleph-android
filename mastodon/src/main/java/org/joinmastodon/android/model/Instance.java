@@ -105,6 +105,10 @@ public abstract class Instance extends BaseModel{
 		return getApiVersion()>=3;
 	}
 
+	public boolean supportsContentTypes(){
+		return getApiVersion("glitch")>=1;
+	}
+
 	// endregion
 
 	public String getVapidPublicKey(){

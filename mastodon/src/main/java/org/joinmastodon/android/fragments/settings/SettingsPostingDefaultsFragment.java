@@ -9,9 +9,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.joinmastodon.android.R;
+import org.joinmastodon.android.api.session.AccountLocalPreferences;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
 import org.joinmastodon.android.model.Preferences;
+import org.joinmastodon.android.model.StatusContentType;
 import org.joinmastodon.android.model.StatusPrivacy;
 import org.joinmastodon.android.model.StatusQuotePolicy;
 import org.joinmastodon.android.model.viewmodel.ListItem;
@@ -29,11 +31,12 @@ import me.grishka.appkit.utils.MergeRecyclerAdapter;
 import me.grishka.appkit.utils.SingleViewRecyclerAdapter;
 
 public class SettingsPostingDefaultsFragment extends BaseSettingsFragment<Void>{
-	private ListItem<Void> languageItem, visibilityItem, quotePolicyItem;
+	private ListItem<Void> languageItem, visibilityItem, quotePolicyItem, contentTypeItem;
 	private Locale postLanguage;
 	private ComposeLanguageAlertViewController.SelectedOption newPostLanguage;
 	private StatusPrivacy visibility=StatusPrivacy.PUBLIC, newVisibility;
 	private StatusQuotePolicy quotePolicy=StatusQuotePolicy.PUBLIC, newQuotePolicy;
+	private StatusContentType contentType, newContentType;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -48,10 +51,13 @@ public class SettingsPostingDefaultsFragment extends BaseSettingsFragment<Void>{
 			if(account.preferences.postingDefaultQuotePolicy!=null)
 				quotePolicy=account.preferences.postingDefaultQuotePolicy;
 		}
+		contentType=account.getLocalPreferences().postingDefaultContentType;
 		ArrayList<ListItem<Void>> items=new ArrayList<>();
 		items.add(visibilityItem=new ListItem<>(getString(R.string.default_post_visibility), getVisibilitySubtitle(), R.drawable.ic_visibility_24px, this::onVisibilityClick));
 		if(account.getInstanceInfo().supportsQuotePostAuthoring())
 			items.add(quotePolicyItem=new ListItem<>(getString(R.string.compose_quote_policy), getQuotePolicySubtitle(), R.drawable.ic_format_quote_fill1_24px, this::onQuotePolicyClick));
+		if(account.getInstanceInfo().supportsContentTypes())
+			items.add(contentTypeItem=new ListItem<>(getString(R.string.default_post_content_type), getContentTypeSubtitle(), R.drawable.ic_description_24px, this::onContentTypeClick));
 		items.add(languageItem=new ListItem<>(getString(R.string.default_post_language), postLanguage!=null ? postLanguage.getDisplayName(Locale.getDefault()) : null, R.drawable.ic_language_24px, this::onDefaultLanguageClick));
 		updateQuotePolicyItem(visibility);
 		onDataLoaded(items);
@@ -74,6 +80,11 @@ public class SettingsPostingDefaultsFragment extends BaseSettingsFragment<Void>{
 			if(newQuotePolicy!=null)
 				s.preferences.postingDefaultQuotePolicy=newQuotePolicy;
 			s.savePreferencesLater();
+		}
+		if(newContentType!=null){
+			AccountLocalPreferences lp=AccountSessionManager.get(accountID).getLocalPreferences();
+			lp.postingDefaultContentType=newContentType;
+			lp.save();
 		}
 		AccountSessionManager.get(accountID).savePreferencesIfPending();
 	}
@@ -115,6 +126,44 @@ public class SettingsPostingDefaultsFragment extends BaseSettingsFragment<Void>{
 			case FOLLOWERS -> R.string.quote_policy_followers;
 			case NOBODY -> R.string.quote_policy_nobody;
 		});
+	}
+
+	private String getContentTypeSubtitle(){
+		return getString(switch(newContentType==null ? contentType : newContentType){
+			case PLAIN -> R.string.content_type_plain;
+			case MARKDOWN -> R.string.content_type_markdown;
+			case HTML -> R.string.content_type_html;
+		});
+	}
+
+	private void onContentTypeClick(ListItem<?> item){
+		ArrayAdapter<CharSequence> adapter=new ArrayAdapter<>(getActivity(), R.layout.item_alert_single_choice_2lines_but_different, R.id.text, new String[]{
+				getString(R.string.content_type_plain),
+				getString(R.string.content_type_markdown),
+				getString(R.string.content_type_html)
+		}){
+			@NonNull
+			@Override
+			public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
+				View view=super.getView(position, convertView, parent);
+				TextView subtitle=view.findViewById(R.id.subtitle);
+				subtitle.setText(switch(StatusContentType.values()[position]){
+					case PLAIN -> R.string.content_type_plain_subtitle;
+					case MARKDOWN -> R.string.content_type_markdown_subtitle;
+					case HTML -> R.string.content_type_html_subtitle;
+				});
+				return view;
+			}
+		};
+		new M3AlertDialogBuilder(getActivity())
+				.setTitle(R.string.default_post_content_type)
+				.setSingleChoiceItems(adapter, (newContentType==null ? contentType : newContentType).ordinal(), (dialog, which)->{
+					newContentType=StatusContentType.values()[which];
+					contentTypeItem.subtitle=getContentTypeSubtitle();
+					rebindItem(contentTypeItem);
+					dialog.dismiss();
+				})
+				.show();
 	}
 
 	private void onDefaultLanguageClick(ListItem<?> item){

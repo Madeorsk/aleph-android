@@ -166,6 +166,7 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 									public void onSuccess(GetStatusSourceText.Response result){
 										args.putString("sourceText", result.text);
 										args.putString("sourceSpoiler", result.spoilerText);
+										args.putSerializable("sourceContentType", result.contentType);
 										Nav.go((Activity) item.context, ComposeFragment.class, args);
 									}
 
