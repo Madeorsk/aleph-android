@@ -10,7 +10,7 @@ android {
 
 	compileSdk 37
 	defaultConfig {
-		applicationId "org.joinmastodon.android"
+		applicationId "com.madeorsk.aleph"
 		minSdk 23
 		targetSdk 37
 		versionCode 190
