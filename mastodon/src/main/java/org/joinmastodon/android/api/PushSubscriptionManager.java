@@ -16,7 +16,6 @@ import org.joinmastodon.android.api.requests.notifications.RegisterForPushNotifi
 import org.joinmastodon.android.api.requests.notifications.UpdatePushSettings;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
-import org.joinmastodon.android.model.PushNotification;
 import org.joinmastodon.android.model.PushSubscription;
 
 import java.io.ByteArrayOutputStream;
@@ -327,22 +326,17 @@ public class PushSubscriptionManager{
 		return result;
 	}
 
-	public PushNotification decryptNotification(byte[] serverKeyBytes, byte[] payload, byte[] salt){
+	/**
+	 * Decrypts a Web Push payload received for this account.
+	 * Returns the decrypted payload bytes, or null when the keys are unavailable or decryption fails.
+	 */
+	public byte[] decryptNotification(byte[] serverKeyBytes, byte[] payload, byte[] salt){
 		if(privateKey==null){
 			if(!loadKeys(AccountSessionManager.getInstance().getAccount(accountID)))
 				return null;
 		}
 		String decryptedStr=decryptNotification(serverKeyBytes, payload, salt, authKey, publicKey, privateKey, AccountSessionManager.get(accountID).pushEncryptionFinalRFC);
-		if(decryptedStr==null)
-			return null;
-		PushNotification notification=MastodonAPIController.gson.fromJson(decryptedStr, PushNotification.class);
-		try{
-			notification.postprocess();
-		}catch(IOException x){
-			Log.e(TAG, "decryptNotification: error verifying notification object", x);
-			return null;
-		}
-		return notification;
+		return decryptedStr==null ? null : decryptedStr.getBytes(StandardCharsets.UTF_8);
 	}
 
 	static String decryptNotification(byte[] serverKeyBytes, byte[] payload, byte[] salt, byte[] authKey, PublicKey publicKey, PrivateKey privateKey, boolean useFinalRFC){
