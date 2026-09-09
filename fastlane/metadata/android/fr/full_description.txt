@@ -1,6 +1,10 @@
-Mastodon est le meilleur endroit pour se tenir au courant de ce qui se passe. Suivez n'importe qui à travers le fédivers et découvrez tout dans un ordre chronologique. Pas d'algorithmes, de publicités ou de pièges à clics dans le coin.
+Aleph est un fork dégooglisé de l'application Android officielle de Mastodon, avec un meilleur support des serveurs glitch-soc. Suivez n'importe qui à travers le fédivers et découvrez tout dans un ordre chronologique. Pas d'algorithmes, de publicités ou de pièges à clics dans le coin.
 
-Ceci est l'application Android officielle de Mastodon. Elle est extrêmement rapide et d'une beauté époustouflante, conçue pour être non seulement puissante, mais aussi facile d'utilisation. Dans notre application, vous pouvez :
+CE QU'ALEPH AJOUTE
+
+■ Types de contenu : choisissez texte brut, Markdown ou HTML au moment de la rédaction, avec un choix par défaut par compte, sur les serveurs qui le prennent en charge
+
+Tout le reste se comporte comme dans l'application officielle :
 
 EXPLORER
 
@@ -34,28 +38,14 @@ UNE PUISSANTE PLATEFORME DE PUBLICATION
 
 Vous n'avez plus à dépendre d'un algorithme opaque qui décide si vos amis vont voir ce que vous avez posté. S'ils vous suivent, ils le verront.
 
-. Vous pouvez partager des liens vers Mastodon en toute sécurité, sachant que tout le monde pourra les lire sans se connecter.
+Vous pouvez partager des liens vers Mastodon en toute sécurité, sachant que tout le monde pourra les lire sans se connecter.
 
 Entre les fils de discussion, les sondages, les images de haute qualité, les vidéos, l'audio et les avertissements de contenu, Mastodon offre de nombreuses façons de vous exprimer d'une manière qui vous convient.
 
-UNE PUISSANTE PLATEFORME DE LECTURE
+DES PROTOCOLES, ET NON DES PLATEFORMES
 
-Nous n'avons pas besoin de vous montrer des publicités, donc nous n'avons pas besoin de vous garder dans notre application. 
+Mastodon n'est pas un réseau social traditionnel, il est conçu sur la base d'un protocole décentralisé. Vous pouvez choisir le serveur qui vous convient, ou héberger le vôtre, et communiquer malgré tout de manière transparente avec les personnes sur d'autres serveurs Mastodon. Avec un seul compte, vous pouvez également joindre des personnes d'autres plateformes du fédivers.
 
-Grâce au fil d'actualité chronologique, il est facile de savoir quand vous avez rattrapé toutes les mises à jour et que vous pouvez passer à autre chose.
+Pas satisfait de votre choix ? Vous pouvez toujours passer à un autre serveur Mastodon tout en emmenant vos abonnés avec vous. Pour les utilisateurs avancés, vous pouvez même héberger vos données sur votre propre infrastructure, puisque Mastodon est open source.
 
-Pas de panique, un clic malencontreux ne ruinera pas vos recommandations pour toujours. Nous ne devinons pas ce que vous voulez voir, nous vous laissons le contrôler.
-
-PROTOCOLS, ET NON PLATEFORMES
-
-« Mastodon » n'est pas un média social traditionnel, il est conçu sur la base d'un protocole décentralisé. Vous pouvez vous inscrire sur notre serveur officiel, ou choisir un tiers pour héberger vos données et modérer votre expérience.
-
-Grâce au protocole commun, peu importe ce que vous choisissez, vous pouvez communiquer de manière transparente avec les personnes sur d'autres serveurs Mastodon. Mais ce n'est pas tout : avec un seul compte, vous pouvez communiquer avec des personnes d'autres plateformes du fédivers.
-
-Pas satisfait de votre choix ? Vous pouvez toujours passer à un autre serveur Mastodon tout en emmenant vos abonnés avec vous. Pour les utilisateurs avancés, vous pouvez même héberger vos données sur votre propre infrastructure, puisque Mastodon est open-source.
-
-À BUT NON LUCRATIF PAR NATURE
-
-Mastodon est une organisation à but non lucratif immatriculée aux États-Unis et en Allemagne. Nous ne sommes pas motivés par des considérations monétaires, mais par ce qu'il y a de mieux pour la plateforme.
-
-COMME PRÉSENTÉ DANS : TIME, Forbes, Wired, The Guardian, CNN, The Verge, TechCrunch, Financial Times, Gizmodo, PCMAG.com, et plus encore.
+Aleph est un fork non officiel, sans aucune affiliation avec l'organisation à but non lucratif Mastodon, ni approbation ou lien avec celle-ci. Le nom et le logo Mastodon sont des marques déposées de leur propriétaire respectif.

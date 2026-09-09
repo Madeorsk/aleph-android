@@ -1,1 +1,1 @@
-Là où les discussions se déroulent
+Un fork dégooglisé de l'app Mastodon officielle, avec support de glitch-soc

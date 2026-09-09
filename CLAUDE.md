@@ -22,6 +22,14 @@ Build types: `debug`, `release`, `beta` (release + `-beta` suffix), `githubDebug
 
 Fastlane lanes `test`, `beta`, `deploy` drive CI; releases and Play uploads happen there, not locally.
 
+## Versioning
+
+`versionName` is `<upstream version>+aleph-<aleph version>` (e.g. `2.13.3+aleph-1.0.0`): the upstream release the fork is rebased on, then Aleph's own semver. Bump the upstream part when merging upstream, the Aleph part for Aleph-only releases.
+
+`versionCode` is `<upstream versionCode> * 100 + <aleph release index>`, the index starting at 0 for the first Aleph release on that upstream base (upstream 190 gives 19000, then 19001 for an Aleph-only release, and an upstream bump to 191 gives 19100). This keeps codes ordered whether the release comes from upstream or from Aleph alone, with room for 100 Aleph-only releases per upstream version. Release tags are `v<versionName>`.
+
+Changelogs live in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`, with `default.txt` symlinked to the latest one. `./updateChangelog.sh` creates the file for the current `versionCode` and moves the symlink.
+
 ## Architecture
 
 Java-only Android app, no DI framework, no Kotlin, no AndroidX fragments/appcompat.

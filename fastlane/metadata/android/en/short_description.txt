@@ -1,1 +1,1 @@
-Where conversations happen
+A de-googled fork of official Mastodon app with improved glitch-soc support

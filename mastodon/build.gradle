@@ -13,8 +13,8 @@ android {
 		applicationId "com.madeorsk.aleph"
 		minSdk 23
 		targetSdk 37
-		versionCode 190
-		versionName "2.13.3"
+		versionCode 19000
+		versionName "2.13.3+aleph-1.0.0"
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 		testBuildType "screenshotsUiTest"
 	}
