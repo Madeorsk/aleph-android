@@ -184,7 +184,7 @@ public class PushSubscriptionManager{
 			throw new IllegalStateException("No device push token available");
 		MastodonAPIController.runInBackground(()->{
 			Log.d(TAG, "registerAccountForPush: started for "+accountID);
-			String encodedPublicKey, encodedAuthKey, pushAccountID=session.pushAccountID;
+			String encodedPublicKey, encodedAuthKey;
 			if(session.hasPushCredentials()){
 				if(!loadKeys(session)){
 					registering=false;
@@ -215,38 +215,51 @@ public class PushSubscriptionManager{
 				}
 			}
 			encodedPublicKey=Base64.encodeToString(serializeRawPublicKey(publicKey), Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
-			session.needReRegisterForPush=true;
-			AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
-			boolean isRFC=(!BuildConfig.DEBUG || !isForceNonRFC()) && session.getInstanceInfo().getApiVersion()>=4;
-			new RegisterForPushNotifications("https://fcm.googleapis.com/fcm/send/"+session.pushToken,
-					encodedPublicKey,
-					encodedAuthKey,
-					subscription==null ? PushSubscription.Alerts.ofAll() : subscription.alerts,
-					subscription==null ? PushSubscription.Policy.ALL : subscription.policy,
-					pushAccountID, isRFC)
-					.setCallback(new Callback<>(){
-						@Override
-						public void onSuccess(PushSubscription result){
-							registering=false;
-							MastodonAPIController.runInBackground(()->{
-								AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
-								if(session==null)
-									return;
-								session.pushSubscription=result;
-								session.needReRegisterForPush=false;
-								session.pushEncryptionFinalRFC=isRFC;
-								AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
-								Log.d(TAG, "Successfully registered "+accountID+" for push notifications");
-							});
-						}
-
-						@Override
-						public void onError(ErrorResponse error){
-							registering=false;
-						}
-					})
-					.exec(accountID);
+			registerEndpointForPush(subscription, "https://fcm.googleapis.com/fcm/send/"+session.pushToken, encodedPublicKey, encodedAuthKey);
 		});
+	}
+
+	/**
+	 * Subscribes this account on the server to a Web Push endpoint, whatever produced it.
+	 * The keys must be the url-safe base64 p256dh and auth secret matching that endpoint.
+	 */
+	private void registerEndpointForPush(PushSubscription subscription, String endpoint, String encodedPublicKey, String encodedAuthKey){
+		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+		if(session==null){
+			registering=false;
+			return;
+		}
+		session.needReRegisterForPush=true;
+		AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
+		boolean isRFC=(!BuildConfig.DEBUG || !isForceNonRFC()) && session.getInstanceInfo().getApiVersion()>=4;
+		new RegisterForPushNotifications(endpoint,
+				encodedPublicKey,
+				encodedAuthKey,
+				subscription==null ? PushSubscription.Alerts.ofAll() : subscription.alerts,
+				subscription==null ? PushSubscription.Policy.ALL : subscription.policy,
+				session.pushAccountID, isRFC)
+				.setCallback(new Callback<>(){
+					@Override
+					public void onSuccess(PushSubscription result){
+						registering=false;
+						MastodonAPIController.runInBackground(()->{
+							AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+							if(session==null)
+								return;
+							session.pushSubscription=result;
+							session.needReRegisterForPush=false;
+							session.pushEncryptionFinalRFC=isRFC;
+							AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
+							Log.d(TAG, "Successfully registered "+accountID+" for push notifications");
+						});
+					}
+
+					@Override
+					public void onError(ErrorResponse error){
+						registering=false;
+					}
+				})
+				.exec(accountID);
 	}
 
 	public void updatePushSettings(PushSubscription subscription){
