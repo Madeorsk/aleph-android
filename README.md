@@ -17,6 +17,8 @@ Everything else behaves like the official app.
 
 Get the APK from the [Releases section](https://github.com/Madeorsk/mastodon-android/releases/latest), or build it yourself. An F-Droid release is coming soon.
 
+⚠️ Some Aleph features are written with the help of generative AI (under human review).
+
 ## Building
 
 As this app is using Java 17 features, you need JDK 17 or newer to build it. Other than that, everything is pretty standard. You can either import the project into Android Studio and build it from there, or run the following command in the project directory:

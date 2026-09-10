@@ -5,6 +5,8 @@ CE QU'ALEPH AJOUTE
 ■ Support d'UnifiedPush : des notifications push sans les services Google Play
 ■ Types de contenu : choisissez texte brut, Markdown ou HTML au moment de la rédaction, avec un choix par défaut par compte, sur les serveurs qui le prennent en charge
 
+⚠️ Certaines fonctionnalités d'Aleph sont écrites avec l'aide d'IA génératives (sous relecture humaine).
+
 Tout le reste se comporte comme dans l'application officielle :
 
 EXPLORER
