@@ -1,6 +1,8 @@
 package org.joinmastodon.android.unifiedpush;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -58,6 +60,19 @@ public final class PushTransport{
 		if(!preference.isAutomatic() && installedDistributors.contains(preference.getDistributor()))
 			return preference;
 		return installedDistributors.isEmpty() ? FCM : distributor(installedDistributors.iterator().next());
+	}
+
+	/**
+	 * The transports the user can choose from: {@link #AUTOMATIC} first, then the others in the order
+	 * {@link #resolve(PushTransport, Collection, boolean) resolve} would pick them.
+	 */
+	public static List<PushTransport> options(Collection<String> installedDistributors){
+		List<PushTransport> options=new ArrayList<>(installedDistributors.size()+2);
+		options.add(AUTOMATIC);
+		for(String distributor:installedDistributors)
+			options.add(distributor(distributor));
+		options.add(FCM);
+		return options;
 	}
 
 	/**

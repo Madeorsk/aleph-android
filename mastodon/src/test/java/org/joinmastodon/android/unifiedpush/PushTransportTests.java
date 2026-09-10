@@ -97,6 +97,19 @@ public class PushTransportTests{
 	}
 
 	@Test
+	public void the_choices_follow_the_order_automatic_picks_them_in(){
+		assertEquals(List.of(PushTransport.AUTOMATIC,
+						PushTransport.distributor("org.unifiedpush.distributor.ntfy"), PushTransport.distributor("io.heckel.ntfy"),
+						PushTransport.FCM),
+				PushTransport.options(INSTALLED));
+	}
+
+	@Test
+	public void the_choices_without_a_distributor_are_automatic_and_fcm(){
+		assertEquals(List.of(PushTransport.AUTOMATIC, PushTransport.FCM), PushTransport.options(List.of()));
+	}
+
+	@Test
 	public void a_distributor_needs_a_package_name(){
 		assertThrows(IllegalArgumentException.class, ()->PushTransport.distributor(null));
 		assertThrows(IllegalArgumentException.class, ()->PushTransport.distributor(""));
