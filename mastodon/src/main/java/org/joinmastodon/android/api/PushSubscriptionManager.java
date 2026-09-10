@@ -17,6 +17,7 @@ import org.joinmastodon.android.api.requests.notifications.UpdatePushSettings;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
 import org.joinmastodon.android.model.PushSubscription;
+import org.unifiedpush.android.connector.UnifiedPush;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -215,15 +216,48 @@ public class PushSubscriptionManager{
 				}
 			}
 			encodedPublicKey=Base64.encodeToString(serializeRawPublicKey(publicKey), Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
-			registerEndpointForPush(subscription, "https://fcm.googleapis.com/fcm/send/"+session.pushToken, encodedPublicKey, encodedAuthKey);
+			boolean isRFC=(!BuildConfig.DEBUG || !isForceNonRFC()) && session.getInstanceInfo().getApiVersion()>=4;
+			registerEndpointForPush(subscription, "https://fcm.googleapis.com/fcm/send/"+session.pushToken, encodedPublicKey, encodedAuthKey, isRFC);
 		});
 	}
 
 	/**
-	 * Subscribes this account on the server to a Web Push endpoint, whatever produced it.
-	 * The keys must be the url-safe base64 p256dh and auth secret matching that endpoint.
+	 * Registers this account with the UnifiedPush distributor the user or the connector has selected.
+	 * The endpoint comes back asynchronously through {@link org.joinmastodon.android.unifiedpush.UnifiedPushService}.
 	 */
-	private void registerEndpointForPush(PushSubscription subscription, String endpoint, String encodedPublicKey, String encodedAuthKey){
+	public void registerUnifiedPush(){
+		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+		if(session==null)
+			return;
+		UnifiedPush.register(MastodonApp.context, accountID, null, session.getInstanceInfo().getVapidPublicKey());
+	}
+
+	/**
+	 * Tells the UnifiedPush distributor to stop sending notifications for this account.
+	 */
+	public void unregisterUnifiedPush(){
+		UnifiedPush.unregister(MastodonApp.context, accountID);
+	}
+
+	/**
+	 * Subscribes this account on the server to the endpoint a UnifiedPush distributor just handed out.
+	 * The keys are the connector's url-safe base64 p256dh and auth secret for this account.
+	 */
+	public void registerUnifiedPushEndpoint(String endpoint, String encodedPublicKey, String encodedAuthKey){
+		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+		if(session==null)
+			return;
+		registering=true;
+		PushSubscription subscription=session.pushSubscription;
+		MastodonAPIController.runInBackground(()->registerEndpointForPush(subscription, endpoint, encodedPublicKey, encodedAuthKey, true));
+	}
+
+	/**
+	 * Subscribes this account on the server to a Web Push endpoint, whatever produced it.
+	 * The keys must be the url-safe base64 p256dh and auth secret matching that endpoint;
+	 * {@code isRFC} tells the server whether it may send RFC 8291 payloads.
+	 */
+	private void registerEndpointForPush(PushSubscription subscription, String endpoint, String encodedPublicKey, String encodedAuthKey, boolean isRFC){
 		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
 		if(session==null){
 			registering=false;
@@ -231,7 +265,6 @@ public class PushSubscriptionManager{
 		}
 		session.needReRegisterForPush=true;
 		AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
-		boolean isRFC=(!BuildConfig.DEBUG || !isForceNonRFC()) && session.getInstanceInfo().getApiVersion()>=4;
 		new RegisterForPushNotifications(endpoint,
 				encodedPublicKey,
 				encodedAuthKey,
