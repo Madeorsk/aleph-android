@@ -53,9 +53,10 @@ public class PushNotificationHandler{
 	private PushNotificationHandler(){}
 
 	/**
-	 * Shows the system notification for a decrypted Web Push payload.
+	 * Shows the system notification for a decrypted Web Push payload, first with what the payload carries,
+	 * then again with the full notification object once it is loaded.
 	 * Does nothing when the account is unknown, has notifications paused, or the payload is not a valid notification.
-	 * Runs the network request for the full notification object in the background; safe to call from any thread.
+	 * Everything runs in the background; safe to call from any thread.
 	 */
 	public static void handleDecryptedPayload(Context context, String accountID, byte[] payload){
 		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
@@ -70,6 +71,11 @@ public class PushNotificationHandler{
 		PushNotification pn=parsePayload(MastodonAPIController.gson, payload);
 		if(pn==null)
 			return;
+		// The payload alone makes a usable notification, so post it before the request that enriches it:
+		// the process may not outlive the request, and posting again with the same tag replaces it in place.
+		MastodonAPIController.runInBackground(()->PushNotificationHandler.notify(context, pn, accountID, null));
+		if(pn.notificationId==null)
+			return;
 		new GetNotificationByID(pn.notificationId)
 				.setCallback(new Callback<>(){
 					@Override
@@ -79,7 +85,7 @@ public class PushNotificationHandler{
 
 					@Override
 					public void onError(ErrorResponse error){
-						MastodonAPIController.runInBackground(()->PushNotificationHandler.notify(context, pn, accountID, null));
+						Log.w(TAG, "Keeping the payload notification for account "+accountID+", could not load notification "+pn.notificationId+": "+error);
 					}
 				})
 				.exec(accountID);
@@ -184,7 +190,9 @@ public class PushNotificationHandler{
 		if(AccountSessionManager.getInstance().getLoggedInAccounts().size()>1){
 			builder.setSubText(accountName);
 		}
-		String notificationTag=accountID+"_"+(notification==null ? 0 : notification.id);
+		// The payload and the loaded notification must share the tag, so the second post replaces the first instead of adding one.
+		String notificationID=notification!=null ? notification.id : pn.notificationId;
+		String notificationTag=accountID+"_"+(notificationID==null ? "0" : notificationID);
 		if(notification!=null && (notification.type==NotificationType.MENTION)){
 			ArrayList<String> mentions=new ArrayList<>();
 			String ownID=AccountSessionManager.getInstance().getAccount(accountID).self.id;
