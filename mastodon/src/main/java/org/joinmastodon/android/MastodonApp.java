@@ -30,8 +30,8 @@ public class MastodonApp extends Application{
 		NetworkUtils.setUserAgent("MastodonAndroid/"+BuildConfig.VERSION_NAME);
 		UiUtils.updateLocalizedDateFormatters(context);
 
-		PushSubscriptionManager.tryRegisterFCM();
 		GlobalUserPreferences.load();
+		PushSubscriptionManager.tryRegisterAll();
 		if(BuildConfig.DEBUG){
 			WebView.setWebContentsDebuggingEnabled(true);
 		}

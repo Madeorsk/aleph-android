@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.joinmastodon.android.MastodonApp;
 import org.joinmastodon.android.PushNotificationHandler;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
@@ -41,16 +42,25 @@ public class UnifiedPushService extends PushService{
 			Log.w(TAG, "onMessage: dropping notification that could not be decrypted for account "+instance);
 			return;
 		}
-		PushNotificationHandler.handleDecryptedPayload(this, instance, message.getContent());
+		// The connector unbinds this service a few seconds from now, so the notification work outlives it.
+		PushNotificationHandler.handleDecryptedPayload(MastodonApp.context, instance, message.getContent());
 	}
 
 	@Override
 	public void onUnregistered(@NonNull String instance){
-		Log.i(TAG, "onUnregistered: account "+instance);
+		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(instance);
+		if(session==null)
+			return;
+		Log.i(TAG, "onUnregistered: registering account "+instance+" again");
+		session.getPushSubscriptionManager().reRegister(session);
 	}
 
 	@Override
 	public void onRegistrationFailed(@NonNull FailedReason reason, @NonNull String instance){
-		Log.w(TAG, "onRegistrationFailed: account "+instance+", reason "+reason);
+		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(instance);
+		if(session==null)
+			return;
+		Log.w(TAG, "onRegistrationFailed: account "+instance+" falls back to FCM, reason "+reason);
+		session.getPushSubscriptionManager().fallBackToFCM(session);
 	}
 }

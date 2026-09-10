@@ -28,15 +28,36 @@ public final class PushTransport{
 	}
 
 	/**
-	 * Reads back a {@link #serialize() serialized} transport.
-	 * An unknown or absent value, and a distributor that is not in {@code installedDistributors}, both give {@link #AUTOMATIC}.
+	 * Reads back a {@link #serialize() serialized} transport as it was written, whether it is still usable or not.
+	 * An absent value gives {@link #AUTOMATIC}.
 	 */
-	public static PushTransport parse(String stored, Collection<String> installedDistributors){
+	public static PushTransport of(String stored){
 		if(stored==null || stored.isEmpty())
 			return AUTOMATIC;
-		if(FCM_VALUE.equals(stored))
+		return FCM_VALUE.equals(stored) ? FCM : new PushTransport(stored);
+	}
+
+	/**
+	 * Reads back a {@link #serialize() serialized} preference.
+	 * An absent value, and a distributor that is not in {@code installedDistributors}, both give {@link #AUTOMATIC}.
+	 */
+	public static PushTransport parse(String stored, Collection<String> installedDistributors){
+		PushTransport transport=of(stored);
+		String distributor=transport.getDistributor();
+		return distributor==null || installedDistributors.contains(distributor) ? transport : AUTOMATIC;
+	}
+
+	/**
+	 * The transport to actually register with, never {@link #AUTOMATIC}.
+	 * A forced choice wins, as long as it is usable: a distributor needs to be installed, and needs a server able to
+	 * send RFC 8291 payloads. Otherwise the first installed distributor is used, and FCM when there is none.
+	 */
+	public static PushTransport resolve(PushTransport preference, Collection<String> installedDistributors, boolean serverSupportsStandardWebPush){
+		if(preference.isFCM() || !serverSupportsStandardWebPush)
 			return FCM;
-		return installedDistributors.contains(stored) ? new PushTransport(stored) : AUTOMATIC;
+		if(!preference.isAutomatic() && installedDistributors.contains(preference.getDistributor()))
+			return preference;
+		return installedDistributors.isEmpty() ? FCM : distributor(installedDistributors.iterator().next());
 	}
 
 	/**

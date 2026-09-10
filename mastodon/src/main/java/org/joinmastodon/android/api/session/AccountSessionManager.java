@@ -145,7 +145,7 @@ public class AccountSessionManager{
 			db.insertWithOnConflict("accounts", null, values, SQLiteDatabase.CONFLICT_REPLACE);
 		});
 		updateInstanceEmojis(instance, instance.getDomain());
-		session.getPushSubscriptionManager().registerFCM();
+		session.getPushSubscriptionManager().register(session);
 		maybeUpdateShortcuts();
 	}
 
@@ -196,8 +196,7 @@ public class AccountSessionManager{
 
 	public void removeAccount(String id){
 		AccountSession session=getAccount(id);
-		if(!TextUtils.isEmpty(session.pushToken))
-			session.getPushSubscriptionManager().unregisterFCM();
+		session.getPushSubscriptionManager().unregister(session);
 		session.getCacheController().closeDatabase();
 		MastodonApp.context.deleteDatabase(id+".db");
 		MastodonApp.context.getSharedPreferences(id, 0).edit().clear().commit();
@@ -397,7 +396,7 @@ public class AccountSessionManager{
 						updateInstanceEmojis(instance, domain);
 						for(AccountSession s:sessions.values()){
 							if(s.domain.equals(domain))
-								s.getPushSubscriptionManager().registerFCM();
+								s.getPushSubscriptionManager().register(s);
 						}
 					}
 
@@ -573,6 +572,7 @@ public class AccountSessionManager{
 					.add("fcm_token", session.pushToken)
 					.add("fcm_version", session.pushTokenVersion)
 					.add("fcm_last_refresh", session.pushTokenLastRefresh)
+					.add("transport", session.activePushTransport.serialize())
 					.build()
 					.toString());
 			values.put("push_subscription", MastodonAPIController.gson.toJson(session.pushSubscription));
