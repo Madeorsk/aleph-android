@@ -1,3 +1,4 @@
+- Push notifications through UnifiedPush, so they work without Google Play Services
 - Pick the content type of your posts (plain text, Markdown, HTML) on glitch-soc servers, with a per-account default
 - Aleph for Mastodon rebranding
 - Up to date with the official app 2.13.3

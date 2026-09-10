@@ -9,4 +9,9 @@
 	<string name="content_type_html">HTML</string>
 	<string name="content_type_html_subtitle">Mise en forme HTML avancée</string>
 	<string name="default_post_content_type">Type de contenu des publications</string>
+	<string name="push_notifications">Notifications</string>
+	<string name="push_transport_automatic">Automatique</string>
+	<string name="push_transport_automatic_subtitle">Utiliser un distributeur UnifiedPush installé, ou Google à défaut</string>
+	<string name="push_transport_fcm">Google (FCM)</string>
+	<string name="push_transport_fcm_subtitle">Nécessite les services Google Play</string>
 </resources>

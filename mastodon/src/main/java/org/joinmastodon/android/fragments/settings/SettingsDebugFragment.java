@@ -112,7 +112,7 @@ public class SettingsDebugFragment extends BaseSettingsFragment<Void>{
 
 	private void onUpdatePushRegistrationClick(ListItem<?> item){
 		PushSubscriptionManager.resetLocalPreferences();
-		PushSubscriptionManager.tryRegisterFCM();
+		PushSubscriptionManager.tryRegisterAll();
 	}
 
 	private void onNonRfcPushClick(CheckableListItem<?> item){

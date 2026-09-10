@@ -39,6 +39,7 @@ import org.joinmastodon.android.model.Role;
 import org.joinmastodon.android.model.Status;
 import org.joinmastodon.android.model.TimelineMarkers;
 import org.joinmastodon.android.model.Token;
+import org.joinmastodon.android.unifiedpush.PushTransport;
 import org.joinmastodon.android.utils.ObjectIdComparator;
 
 import java.time.Instant;
@@ -97,6 +98,8 @@ public class AccountSession{
 	public String pushToken;
 	public int pushTokenVersion;
 	public long pushTokenLastRefresh;
+	/** Transport this account is currently registered with, {@link PushTransport#AUTOMATIC} when it never was. */
+	public volatile PushTransport activePushTransport=PushTransport.AUTOMATIC;
 	private transient MastodonAPIController apiController;
 	private transient StatusInteractionController statusInteractionController;
 	private transient CacheController cacheController;
@@ -139,6 +142,8 @@ public class AccountSession{
 				pushTokenLastRefresh=pushKeys.get("fcm_last_refresh").getAsLong();
 			}
 		}
+		if(pushKeys.has("transport") && pushKeys.get("transport").isJsonPrimitive())
+			activePushTransport=PushTransport.of(pushKeys.get("transport").getAsString());
 		pushSubscription=MastodonAPIController.gson.fromJson(values.getAsString("push_subscription"), PushSubscription.class);
 		JsonObject legacyFilters=JsonParser.parseString(values.getAsString("legacy_filters")).getAsJsonObject();
 		wordFilters=MastodonAPIController.gson.fromJson(legacyFilters.getAsJsonArray("filters"), new TypeToken<List<LegacyFilter>>(){}.getType());
@@ -163,6 +168,7 @@ public class AccountSession{
 				.add("fcm_token", pushToken)
 				.add("fcm_version", pushTokenVersion)
 				.add("fcm_last_refresh", pushTokenLastRefresh)
+				.add("transport", activePushTransport.serialize())
 				.build()
 				.toString());
 		values.put("push_subscription", MastodonAPIController.gson.toJson(pushSubscription));

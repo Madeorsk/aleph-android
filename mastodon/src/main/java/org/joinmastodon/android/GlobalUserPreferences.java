@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
 import org.joinmastodon.android.model.Account;
+import org.joinmastodon.android.unifiedpush.PushTransport;
+import org.joinmastodon.android.unifiedpush.UnifiedPushDistributors;
 
 public class GlobalUserPreferences{
 	public static boolean playGifs;
@@ -18,6 +20,7 @@ public class GlobalUserPreferences{
 	public static boolean showCWs;
 	public static boolean hideSensitiveMedia;
 	public static boolean showDebugSettings;
+	public static PushTransport pushTransport=PushTransport.AUTOMATIC;
 
 	private static SharedPreferences getPrefs(){
 		return MastodonApp.context.getSharedPreferences("global", Context.MODE_PRIVATE);
@@ -42,6 +45,7 @@ public class GlobalUserPreferences{
 		showCWs=prefs.getBoolean("showCWs", true);
 		hideSensitiveMedia=prefs.getBoolean("hideSensitive", true);
 		showDebugSettings=prefs.getBoolean("showDebugSettings", false);
+		pushTransport=PushTransport.parse(prefs.getString("pushTransport", null), UnifiedPushDistributors.installed());
 		if(!prefs.getBoolean("perAccountMigrationDone", false)){
 			AccountSession account=AccountSessionManager.getInstance().getLastActiveAccount();
 			if(account!=null){
@@ -72,6 +76,7 @@ public class GlobalUserPreferences{
 				.putBoolean("showCWs", showCWs)
 				.putBoolean("hideSensitive", hideSensitiveMedia)
 				.putBoolean("showDebugSettings", showDebugSettings)
+				.putString("pushTransport", pushTransport.serialize())
 				.apply();
 	}
 

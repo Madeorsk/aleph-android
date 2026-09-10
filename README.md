@@ -4,13 +4,14 @@
 
 # Aleph
 
-Aleph is a fork of the [official Mastodon Android app](https://github.com/mastodon/mastodon-android) that adds support for [glitch-soc](https://github.com/glitch-soc/mastodon) features.
+Aleph is a fork of the [official Mastodon Android app](https://github.com/mastodon/mastodon-android) that adds a few features the official app is missing.
 
 ## Introduction
 
-Aleph tracks the upstream app and exposes glitch-soc features that the official app does not support:
+Aleph tracks the upstream app and adds:
 
-- Post content type selection (plain text, Markdown, HTML) in the compose screen, with a per-account default, when the server advertises support for it.
+- UnifiedPush support, so push notifications work without Google Play Services.
+- Post content type selection (plain text, Markdown, HTML) in the compose screen, with a per-account default, when the server advertises support for it ([glitch-soc](https://github.com/glitch-soc/mastodon)).
 
 Everything else behaves like the official app.
 
@@ -26,7 +27,7 @@ As this app is using Java 17 features, you need JDK 17 or newer to build it. Oth
 
 ## Contributing
 
-Issues and pull requests about Aleph features or better glitch-soc support are welcome here. Anything that belongs to the official app should go [upstream](https://github.com/mastodon/mastodon-android) instead.
+Issues and pull requests about Aleph features are welcome here. Anything that belongs to the official app should go [upstream](https://github.com/mastodon/mastodon-android) instead.
 
 Translations are still handled upstream through [Crowdin](https://crowdin.com/project/mastodon-for-android). Aleph-only strings live in `values/aleph_strings.xml`; do not modify the upstream `strings.xml` files.
 

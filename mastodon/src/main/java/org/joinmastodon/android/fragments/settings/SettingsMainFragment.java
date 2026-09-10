@@ -41,6 +41,7 @@ public class SettingsMainFragment extends BaseSettingsFragment<Object>{
 	private Button updateButton1, updateButton2;
 	private TextView updateText;
 	private ArrayList<ListItem<?>> items=new ArrayList<>();
+	private ListItem<Object> notificationsItem;
 	private Runnable updateDownloadProgressUpdater=new Runnable(){
 		@Override
 		public void run(){
@@ -71,7 +72,8 @@ public class SettingsMainFragment extends BaseSettingsFragment<Object>{
 
 				new SectionHeaderListItem(R.string.settings_app_settings),
 				new ListItem<>(R.string.settings_behavior, 0, R.drawable.ic_tune_24px, this::onBehaviorClick),
-				new ListItem<>(R.string.settings_display, 0, R.drawable.ic_style_24px, this::onDisplayClick)
+				new ListItem<>(R.string.settings_display, 0, R.drawable.ic_style_24px, this::onDisplayClick),
+				notificationsItem=new ListItem<>(getString(R.string.push_notifications), SettingsAppNotificationsFragment.getTransportLabel(getActivity(), GlobalUserPreferences.pushTransport), R.drawable.ic_notifications_24px, this::onNotificationsClick)
 
 		));
 		if(AccountSessionManager.get(accountID).isEligibleForDonations()){
@@ -95,6 +97,16 @@ public class SettingsMainFragment extends BaseSettingsFragment<Object>{
 	public void onDestroy(){
 		super.onDestroy();
 		E.unregister(this);
+	}
+
+	@Override
+	protected void onShown(){
+		super.onShown();
+		String transport=SettingsAppNotificationsFragment.getTransportLabel(getActivity(), GlobalUserPreferences.pushTransport);
+		if(!transport.equals(notificationsItem.subtitle)){
+			notificationsItem.subtitle=transport;
+			rebindItem(notificationsItem);
+		}
 	}
 
 	@Override
@@ -152,6 +164,10 @@ public class SettingsMainFragment extends BaseSettingsFragment<Object>{
 
 	private void onDisplayClick(ListItem<?> item_){
 		Nav.go(getActivity(), SettingsDisplayFragment.class, makeFragmentArgs());
+	}
+
+	private void onNotificationsClick(ListItem<?> item_){
+		Nav.go(getActivity(), SettingsAppNotificationsFragment.class, makeFragmentArgs());
 	}
 
 	private void onAboutClick(ListItem<?> item_){

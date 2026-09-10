@@ -6,18 +6,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
 import org.joinmastodon.android.BuildConfig;
+import org.joinmastodon.android.GlobalUserPreferences;
 import org.joinmastodon.android.MastodonApp;
 import org.joinmastodon.android.api.requests.notifications.RegisterForPushNotifications;
 import org.joinmastodon.android.api.requests.notifications.UpdatePushSettings;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
-import org.joinmastodon.android.model.PushNotification;
+import org.joinmastodon.android.model.Instance;
 import org.joinmastodon.android.model.PushSubscription;
+import org.joinmastodon.android.unifiedpush.PushTransport;
+import org.joinmastodon.android.unifiedpush.UnifiedPushDistributors;
+import org.unifiedpush.android.connector.UnifiedPush;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,7 +43,12 @@ import java.security.spec.ECPoint;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -60,12 +71,16 @@ public class PushSubscriptionManager{
 
 	private static final String TAG="PushSubscriptionManager";
 	private static final long TOKEN_REFRESH_INTERVAL=30*24*60*60*1000L;
+	private static final long DISTRIBUTOR_ANSWER_TIMEOUT=60*1000L;
 
 	private String accountID;
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private byte[] authKey;
-	private boolean registering;
+	private volatile boolean registering;
+	private volatile boolean awaitingDistributorEndpoint;
+	/** Distributors that failed to register this account, skipped until the app restarts. */
+	private final Set<String> unusableDistributors=Collections.synchronizedSet(new HashSet<>());
 
 	public PushSubscriptionManager(String accountID){
 		this.accountID=accountID;
@@ -78,17 +93,134 @@ public class PushSubscriptionManager{
 		for(AccountSession session:AccountSessionManager.getInstance().getLoggedInAccounts()){
 			session.pushToken=null;
 			session.pushTokenVersion=0;
+			session.activePushTransport=PushTransport.AUTOMATIC;
 			AccountSessionManager.getInstance().writeAccountPushSettings(session.getID());
 		}
 	}
 
-	public static void tryRegisterFCM(){
+	/**
+	 * Registers every logged-in account for push, each on the transport it resolves to.
+	 */
+	public static void tryRegisterAll(){
 		for(AccountSession session:AccountSessionManager.getInstance().getLoggedInAccounts()){
-			session.getPushSubscriptionManager().registerFCM();
+			session.getPushSubscriptionManager().register(session);
 		}
 	}
 
-	public void registerFCM(){
+	/**
+	 * Registers this account for push on the transport it resolves to right now,
+	 * unregistering the previous one first when the transport changed.
+	 * Does nothing until the server's VAPID key is known, since both transports need it, and an instance
+	 * that failed to load reports no key and no API version, which would resolve every account to FCM.
+	 */
+	public void register(AccountSession session){
+		Instance instance=session.getInstanceInfo();
+		if(instance.getVapidPublicKey()==null){
+			Log.d(TAG, "Not registering account "+accountID+" for push yet, the server's public key is unknown");
+			return;
+		}
+		MastodonAPIController.runInBackground(()->{
+			List<String> distributors=new ArrayList<>(UnifiedPushDistributors.installed());
+			distributors.removeAll(unusableDistributors);
+			PushTransport transport=PushTransport.resolve(GlobalUserPreferences.pushTransport, distributors, instance.getApiVersion()>=4);
+			boolean transportChanged=!transport.equals(session.activePushTransport);
+			if(transportChanged){
+				unregisterTransport(session);
+				session.activePushTransport=transport;
+				AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
+			}
+			if(transport.isFCM())
+				registerFCM();
+			else
+				registerDistributor(session, transport.getDistributor(), transportChanged);
+		});
+	}
+
+	/**
+	 * Stops push delivery for this account on whatever transport it is registered with.
+	 */
+	public void unregister(AccountSession session){
+		unregisterTransport(session);
+	}
+
+	/**
+	 * Moves this account back to FCM after its distributor refused to register it.
+	 * That distributor is skipped for this account until the app restarts; other accounts and the user's own choice are left alone.
+	 */
+	public void fallBackToFCM(AccountSession session){
+		String distributor=session.activePushTransport.getDistributor();
+		if(distributor==null)
+			return;
+		awaitingDistributorEndpoint=false;
+		unusableDistributors.add(distributor);
+		unregisterUnifiedPush(); // A distributor that answers late must not point the subscription back at itself
+		session.activePushTransport=PushTransport.FCM;
+		AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
+		registerFCM();
+	}
+
+	/**
+	 * Registers this account again after its distributor dropped the registration:
+	 * on the same distributor if it is still around, on FCM otherwise.
+	 */
+	public void reRegister(AccountSession session){
+		session.needReRegisterForPush=true;
+		register(session);
+	}
+
+	private void unregisterTransport(AccountSession session){
+		if(session.activePushTransport.getDistributor()!=null){
+			awaitingDistributorEndpoint=false;
+			unregisterUnifiedPush();
+		}else if(!TextUtils.isEmpty(session.pushToken)){
+			unregisterFCM();
+			// The token is revoked, so the next FCM registration has to ask for a new one.
+			session.pushToken=null;
+			session.pushTokenVersion=0;
+			session.pushTokenLastRefresh=0;
+		}
+	}
+
+	private void registerDistributor(AccountSession session, String distributor, boolean transportChanged){
+		// getAckDistributor only says which distributor this app talks to, so it is no proof that this account is registered with it.
+		if(!transportChanged && session.pushSubscription!=null && !session.needReRegisterForPush && distributor.equals(UnifiedPush.getAckDistributor(MastodonApp.context))){
+			Log.d(TAG, "Account "+accountID+" is already registered with distributor "+distributor);
+			return;
+		}
+		try{
+			UnifiedPush.saveDistributor(MastodonApp.context, distributor);
+			if(!registerUnifiedPush(session))
+				return;
+			awaitDistributorEndpoint(distributor);
+			return;
+		}catch(Exception x){
+			Log.w(TAG, "Failed to register account "+accountID+" with distributor "+distributor, x);
+		}
+		// The distributor refused the registration outright, so fall back to FCM right away.
+		fallBackToFCM(session);
+	}
+
+	/**
+	 * A distributor that accepts a registration and never answers would leave the account without push,
+	 * so give up on it after a while. Nothing cancels this: the flag it reads is cleared by the endpoint.
+	 */
+	private void awaitDistributorEndpoint(String distributor){
+		if(awaitingDistributorEndpoint)
+			return;
+		awaitingDistributorEndpoint=true;
+		new Handler(Looper.getMainLooper()).postDelayed(()->MastodonAPIController.runInBackground(()->{
+			if(!awaitingDistributorEndpoint)
+				return;
+			awaitingDistributorEndpoint=false;
+			AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+			if(session==null || session.activePushTransport.getDistributor()==null)
+				return;
+			Log.w(TAG, "Distributor "+distributor+" did not answer for account "+accountID+", falling back to FCM");
+			fallBackToFCM(session);
+		}), DISTRIBUTOR_ANSWER_TIMEOUT);
+	}
+
+	private void registerFCM(){
 		if(registering){
 			Log.d(TAG, "Account "+accountID+" is already being registered for push");
 			return;
@@ -99,6 +231,7 @@ public class PushSubscriptionManager{
 		long tokenLastRefreshed=session.pushTokenLastRefresh;
 		if(!TextUtils.isEmpty(session.pushToken) && tokenVersion==BuildConfig.VERSION_CODE && System.currentTimeMillis()-tokenLastRefreshed<TOKEN_REFRESH_INTERVAL){
 			Log.d(TAG, "Account "+accountID+" is already registered for push, no re-registration necessary");
+			registering=false;
 			return;
 		}
 		if(tokenVersion<145){ // Quote notifications added
@@ -139,7 +272,7 @@ public class PushSubscriptionManager{
 		}
 	}
 
-	public void unregisterFCM(){
+	private void unregisterFCM(){
 		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
 		Intent intent=new Intent("com.google.android.c2dm.intent.REGISTER");
 		intent.setPackage("com.google.android.gms");
@@ -185,7 +318,7 @@ public class PushSubscriptionManager{
 			throw new IllegalStateException("No device push token available");
 		MastodonAPIController.runInBackground(()->{
 			Log.d(TAG, "registerAccountForPush: started for "+accountID);
-			String encodedPublicKey, encodedAuthKey, pushAccountID=session.pushAccountID;
+			String encodedPublicKey, encodedAuthKey;
 			if(session.hasPushCredentials()){
 				if(!loadKeys(session)){
 					registering=false;
@@ -216,38 +349,91 @@ public class PushSubscriptionManager{
 				}
 			}
 			encodedPublicKey=Base64.encodeToString(serializeRawPublicKey(publicKey), Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
-			session.needReRegisterForPush=true;
-			AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
 			boolean isRFC=(!BuildConfig.DEBUG || !isForceNonRFC()) && session.getInstanceInfo().getApiVersion()>=4;
-			new RegisterForPushNotifications("https://fcm.googleapis.com/fcm/send/"+session.pushToken,
-					encodedPublicKey,
-					encodedAuthKey,
-					subscription==null ? PushSubscription.Alerts.ofAll() : subscription.alerts,
-					subscription==null ? PushSubscription.Policy.ALL : subscription.policy,
-					pushAccountID, isRFC)
-					.setCallback(new Callback<>(){
-						@Override
-						public void onSuccess(PushSubscription result){
-							registering=false;
-							MastodonAPIController.runInBackground(()->{
-								AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
-								if(session==null)
-									return;
-								session.pushSubscription=result;
-								session.needReRegisterForPush=false;
-								session.pushEncryptionFinalRFC=isRFC;
-								AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
-								Log.d(TAG, "Successfully registered "+accountID+" for push notifications");
-							});
-						}
-
-						@Override
-						public void onError(ErrorResponse error){
-							registering=false;
-						}
-					})
-					.exec(accountID);
+			registerEndpointForPush(subscription, "https://fcm.googleapis.com/fcm/send/"+session.pushToken, encodedPublicKey, encodedAuthKey, isRFC);
 		});
+	}
+
+	/**
+	 * Registers this account with the UnifiedPush distributor the user or the connector has selected.
+	 * The endpoint comes back asynchronously through {@link org.joinmastodon.android.unifiedpush.UnifiedPushService}.
+	 * Returns false when the server has no VAPID key, which a distributor needs.
+	 */
+	private boolean registerUnifiedPush(AccountSession session){
+		Instance instance=session.getInstanceInfo();
+		String vapidKey=instance==null ? null : instance.getVapidPublicKey();
+		if(vapidKey==null){
+			Log.w(TAG, "Can't register account "+accountID+" with a distributor because the server does not provide a public key");
+			return false;
+		}
+		UnifiedPush.register(MastodonApp.context, accountID, null, vapidKey);
+		return true;
+	}
+
+	private void unregisterUnifiedPush(){
+		UnifiedPush.unregister(MastodonApp.context, accountID);
+	}
+
+	/**
+	 * Subscribes this account on the server to the endpoint a UnifiedPush distributor just handed out.
+	 * The keys are the connector's url-safe base64 p256dh and auth secret for this account.
+	 * An endpoint arriving after the account went back to FCM is ignored.
+	 */
+	public void registerUnifiedPushEndpoint(String endpoint, String encodedPublicKey, String encodedAuthKey){
+		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+		if(session==null)
+			return;
+		if(session.activePushTransport.getDistributor()==null){
+			Log.i(TAG, "Ignoring distributor endpoint for account "+accountID+", it is on "+session.activePushTransport);
+			return;
+		}
+		awaitingDistributorEndpoint=false;
+		registering=true;
+		PushSubscription subscription=session.pushSubscription;
+		MastodonAPIController.runInBackground(()->registerEndpointForPush(subscription, endpoint, encodedPublicKey, encodedAuthKey, true));
+	}
+
+	/**
+	 * Subscribes this account on the server to a Web Push endpoint, whatever produced it.
+	 * The keys must be the url-safe base64 p256dh and auth secret matching that endpoint;
+	 * {@code isRFC} tells the server whether it may send RFC 8291 payloads.
+	 */
+	private void registerEndpointForPush(PushSubscription subscription, String endpoint, String encodedPublicKey, String encodedAuthKey, boolean isRFC){
+		AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+		if(session==null){
+			registering=false;
+			return;
+		}
+		session.needReRegisterForPush=true;
+		AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
+		new RegisterForPushNotifications(endpoint,
+				encodedPublicKey,
+				encodedAuthKey,
+				subscription==null ? PushSubscription.Alerts.ofAll() : subscription.alerts,
+				subscription==null ? PushSubscription.Policy.ALL : subscription.policy,
+				session.pushAccountID, isRFC)
+				.setCallback(new Callback<>(){
+					@Override
+					public void onSuccess(PushSubscription result){
+						registering=false;
+						MastodonAPIController.runInBackground(()->{
+							AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
+							if(session==null)
+								return;
+							session.pushSubscription=result;
+							session.needReRegisterForPush=false;
+							session.pushEncryptionFinalRFC=isRFC;
+							AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
+							Log.d(TAG, "Successfully registered "+accountID+" for push notifications");
+						});
+					}
+
+					@Override
+					public void onError(ErrorResponse error){
+						registering=false;
+					}
+				})
+				.exec(accountID);
 	}
 
 	public void updatePushSettings(PushSubscription subscription){
@@ -327,22 +513,17 @@ public class PushSubscriptionManager{
 		return result;
 	}
 
-	public PushNotification decryptNotification(byte[] serverKeyBytes, byte[] payload, byte[] salt){
+	/**
+	 * Decrypts a Web Push payload received for this account.
+	 * Returns the decrypted payload bytes, or null when the keys are unavailable or decryption fails.
+	 */
+	public byte[] decryptNotification(byte[] serverKeyBytes, byte[] payload, byte[] salt){
 		if(privateKey==null){
 			if(!loadKeys(AccountSessionManager.getInstance().getAccount(accountID)))
 				return null;
 		}
 		String decryptedStr=decryptNotification(serverKeyBytes, payload, salt, authKey, publicKey, privateKey, AccountSessionManager.get(accountID).pushEncryptionFinalRFC);
-		if(decryptedStr==null)
-			return null;
-		PushNotification notification=MastodonAPIController.gson.fromJson(decryptedStr, PushNotification.class);
-		try{
-			notification.postprocess();
-		}catch(IOException x){
-			Log.e(TAG, "decryptNotification: error verifying notification object", x);
-			return null;
-		}
-		return notification;
+		return decryptedStr==null ? null : decryptedStr.getBytes(StandardCharsets.UTF_8);
 	}
 
 	static String decryptNotification(byte[] serverKeyBytes, byte[] payload, byte[] salt, byte[] authKey, PublicKey publicKey, PrivateKey privateKey, boolean useFinalRFC){
@@ -458,6 +639,11 @@ public class PushSubscriptionManager{
 						session=AccountSessionManager.get(accountID);
 					}catch(IllegalStateException x){
 						Log.w(TAG, x);
+						return;
+					}
+					if(session.activePushTransport.getDistributor()!=null){
+						Log.i(TAG, "Ignoring FCM token for account "+accountID+", it moved to distributor "+session.activePushTransport);
+						session.getPushSubscriptionManager().registering=false;
 						return;
 					}
 					session.pushToken=token;
