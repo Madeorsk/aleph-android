@@ -77,7 +77,7 @@ public class PushSubscriptionManager{
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private byte[] authKey;
-	private boolean registering;
+	private volatile boolean registering;
 	private volatile boolean awaitingDistributorEndpoint;
 	/** Distributors that failed to register this account, skipped until the app restarts. */
 	private final Set<String> unusableDistributors=Collections.synchronizedSet(new HashSet<>());
@@ -110,19 +110,21 @@ public class PushSubscriptionManager{
 	/**
 	 * Registers this account for push on the transport it resolves to right now,
 	 * unregistering the previous one first when the transport changed.
-	 * Does nothing while the instance info is unknown, since both transports need the server's VAPID key.
+	 * Does nothing until the server's VAPID key is known, since both transports need it, and an instance
+	 * that failed to load reports no key and no API version, which would resolve every account to FCM.
 	 */
 	public void register(AccountSession session){
 		Instance instance=session.getInstanceInfo();
-		if(instance==null){
-			Log.d(TAG, "Not registering account "+accountID+" for push yet, instance info is not loaded");
+		if(instance.getVapidPublicKey()==null){
+			Log.d(TAG, "Not registering account "+accountID+" for push yet, the server's public key is unknown");
 			return;
 		}
 		MastodonAPIController.runInBackground(()->{
 			List<String> distributors=new ArrayList<>(UnifiedPushDistributors.installed());
 			distributors.removeAll(unusableDistributors);
 			PushTransport transport=PushTransport.resolve(GlobalUserPreferences.pushTransport, distributors, instance.getApiVersion()>=4);
-			if(!transport.equals(session.activePushTransport)){
+			boolean transportChanged=!transport.equals(session.activePushTransport);
+			if(transportChanged){
 				unregisterTransport(session);
 				session.activePushTransport=transport;
 				AccountSessionManager.getInstance().writeAccountPushSettings(accountID);
@@ -130,7 +132,7 @@ public class PushSubscriptionManager{
 			if(transport.isFCM())
 				registerFCM();
 			else
-				registerDistributor(session, transport.getDistributor());
+				registerDistributor(session, transport.getDistributor(), transportChanged);
 		});
 	}
 
@@ -168,6 +170,7 @@ public class PushSubscriptionManager{
 
 	private void unregisterTransport(AccountSession session){
 		if(session.activePushTransport.getDistributor()!=null){
+			awaitingDistributorEndpoint=false;
 			unregisterUnifiedPush();
 		}else if(!TextUtils.isEmpty(session.pushToken)){
 			unregisterFCM();
@@ -178,17 +181,18 @@ public class PushSubscriptionManager{
 		}
 	}
 
-	private void registerDistributor(AccountSession session, String distributor){
-		if(session.pushSubscription!=null && !session.needReRegisterForPush && distributor.equals(UnifiedPush.getAckDistributor(MastodonApp.context))){
+	private void registerDistributor(AccountSession session, String distributor, boolean transportChanged){
+		// getAckDistributor only says which distributor this app talks to, so it is no proof that this account is registered with it.
+		if(!transportChanged && session.pushSubscription!=null && !session.needReRegisterForPush && distributor.equals(UnifiedPush.getAckDistributor(MastodonApp.context))){
 			Log.d(TAG, "Account "+accountID+" is already registered with distributor "+distributor);
 			return;
 		}
 		try{
 			UnifiedPush.saveDistributor(MastodonApp.context, distributor);
-			if(registerUnifiedPush(session)){
-				awaitDistributorEndpoint(distributor);
+			if(!registerUnifiedPush(session))
 				return;
-			}
+			awaitDistributorEndpoint(distributor);
+			return;
 		}catch(Exception x){
 			Log.w(TAG, "Failed to register account "+accountID+" with distributor "+distributor, x);
 		}
@@ -207,6 +211,7 @@ public class PushSubscriptionManager{
 		new Handler(Looper.getMainLooper()).postDelayed(()->MastodonAPIController.runInBackground(()->{
 			if(!awaitingDistributorEndpoint)
 				return;
+			awaitingDistributorEndpoint=false;
 			AccountSession session=AccountSessionManager.getInstance().tryGetAccount(accountID);
 			if(session==null || session.activePushTransport.getDistributor()==null)
 				return;
@@ -638,6 +643,7 @@ public class PushSubscriptionManager{
 					}
 					if(session.activePushTransport.getDistributor()!=null){
 						Log.i(TAG, "Ignoring FCM token for account "+accountID+", it moved to distributor "+session.activePushTransport);
+						session.getPushSubscriptionManager().registering=false;
 						return;
 					}
 					session.pushToken=token;

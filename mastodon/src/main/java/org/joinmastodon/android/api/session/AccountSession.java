@@ -99,7 +99,7 @@ public class AccountSession{
 	public int pushTokenVersion;
 	public long pushTokenLastRefresh;
 	/** Transport this account is currently registered with, {@link PushTransport#AUTOMATIC} when it never was. */
-	public PushTransport activePushTransport=PushTransport.AUTOMATIC;
+	public volatile PushTransport activePushTransport=PushTransport.AUTOMATIC;
 	private transient MastodonAPIController apiController;
 	private transient StatusInteractionController statusInteractionController;
 	private transient CacheController cacheController;
