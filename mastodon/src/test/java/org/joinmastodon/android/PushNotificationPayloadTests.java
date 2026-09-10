@@ -36,9 +36,25 @@ public class PushNotificationPayloadTests{
 	}
 
 	@Test
-	public void rejects_a_payload_missing_a_required_field(){
+	public void parses_a_payload_without_the_optional_fields(){
+		PushNotification pn=parse("""
+				{"notification_type":"favourite","icon":"https://example.org/avatar.png","title":"t","body":"b"}""");
+		assertNotNull(pn);
+		assertEquals(PushNotification.Type.FAVORITE, pn.notificationType);
+		assertNull(pn.notificationId);
+		assertNull(pn.accessToken);
+	}
+
+	@Test
+	public void rejects_a_payload_without_an_icon(){
 		assertNull(parse("""
 				{"notification_id":"12345","notification_type":"mention","title":"t","body":"b"}"""));
+	}
+
+	@Test
+	public void rejects_a_notification_type_this_version_does_not_know(){
+		assertNull(parse("""
+				{"notification_type":"admin.sign_up","icon":"https://example.org/avatar.png","title":"t","body":"b"}"""));
 	}
 
 	@Test

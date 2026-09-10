@@ -15,14 +15,14 @@ import android.util.Log;
 import org.joinmastodon.android.BuildConfig;
 import org.joinmastodon.android.GlobalUserPreferences;
 import org.joinmastodon.android.MastodonApp;
-import org.joinmastodon.android.model.Instance;
-import org.joinmastodon.android.unifiedpush.PushTransport;
-import org.joinmastodon.android.unifiedpush.UnifiedPushDistributors;
 import org.joinmastodon.android.api.requests.notifications.RegisterForPushNotifications;
 import org.joinmastodon.android.api.requests.notifications.UpdatePushSettings;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
+import org.joinmastodon.android.model.Instance;
 import org.joinmastodon.android.model.PushSubscription;
+import org.joinmastodon.android.unifiedpush.PushTransport;
+import org.joinmastodon.android.unifiedpush.UnifiedPushDistributors;
 import org.unifiedpush.android.connector.UnifiedPush;
 
 import java.io.ByteArrayOutputStream;
@@ -78,7 +78,7 @@ public class PushSubscriptionManager{
 	private PublicKey publicKey;
 	private byte[] authKey;
 	private boolean registering;
-	private boolean awaitingDistributorEndpoint;
+	private volatile boolean awaitingDistributorEndpoint;
 	/** Distributors that failed to register this account, skipped until the app restarts. */
 	private final Set<String> unusableDistributors=Collections.synchronizedSet(new HashSet<>());
 
@@ -111,7 +111,6 @@ public class PushSubscriptionManager{
 	 * Registers this account for push on the transport it resolves to right now,
 	 * unregistering the previous one first when the transport changed.
 	 * Does nothing while the instance info is unknown, since both transports need the server's VAPID key.
-	 * Runs in the background, since a transport change writes to the database.
 	 */
 	public void register(AccountSession session){
 		Instance instance=session.getInstanceInfo();
@@ -366,9 +365,6 @@ public class PushSubscriptionManager{
 		return true;
 	}
 
-	/**
-	 * Tells the UnifiedPush distributor to stop sending notifications for this account.
-	 */
 	private void unregisterUnifiedPush(){
 		UnifiedPush.unregister(MastodonApp.context, accountID);
 	}

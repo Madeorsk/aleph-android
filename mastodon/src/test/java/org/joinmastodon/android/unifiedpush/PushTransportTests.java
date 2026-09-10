@@ -17,7 +17,18 @@ public class PushTransportTests{
 
 	@Test
 	public void fcm_survives_a_round_trip(){
-		assertEquals(PushTransport.FCM, PushTransport.parse(PushTransport.FCM.serialize(), INSTALLED));
+		assertEquals("fcm", PushTransport.FCM.serialize());
+		assertEquals(PushTransport.FCM, PushTransport.parse("fcm", INSTALLED));
+		assertEquals(PushTransport.FCM, PushTransport.parse("fcm", List.of()));
+	}
+
+	@Test
+	public void transports_are_only_equal_to_themselves(){
+		assertNotEquals(PushTransport.AUTOMATIC, PushTransport.FCM);
+		assertNotEquals(PushTransport.FCM, PushTransport.distributor("io.heckel.ntfy"));
+		assertNotEquals(PushTransport.distributor("io.heckel.ntfy"), PushTransport.distributor("org.unifiedpush.distributor.ntfy"));
+		assertNotEquals(PushTransport.AUTOMATIC, null);
+		assertEquals(PushTransport.distributor("io.heckel.ntfy").hashCode(), PushTransport.distributor("io.heckel.ntfy").hashCode());
 	}
 
 	@Test
@@ -113,5 +124,6 @@ public class PushTransportTests{
 	public void a_distributor_needs_a_package_name(){
 		assertThrows(IllegalArgumentException.class, ()->PushTransport.distributor(null));
 		assertThrows(IllegalArgumentException.class, ()->PushTransport.distributor(""));
+		assertThrows(IllegalArgumentException.class, ()->PushTransport.distributor("fcm"));
 	}
 }
