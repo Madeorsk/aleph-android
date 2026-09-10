@@ -2,6 +2,7 @@ Aleph est un fork dégooglisé de l'application Android officielle de Mastodon, 
 
 CE QU'ALEPH AJOUTE
 
+■ Support d'UnifiedPush : des notifications push sans les services Google Play
 ■ Types de contenu : choisissez texte brut, Markdown ou HTML au moment de la rédaction, avec un choix par défaut par compte, sur les serveurs qui le prennent en charge
 
 Tout le reste se comporte comme dans l'application officielle :
