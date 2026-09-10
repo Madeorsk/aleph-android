@@ -36,7 +36,7 @@ public class SettingsAppNotificationsFragment extends BaseSettingsFragment<PushT
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setTitle(R.string.settings_notifications);
+		setTitle(R.string.push_notifications);
 
 		List<ListItem<PushTransport>> items=new ArrayList<>();
 		for(PushTransport transport:PushTransport.options(UnifiedPushDistributors.installed())){

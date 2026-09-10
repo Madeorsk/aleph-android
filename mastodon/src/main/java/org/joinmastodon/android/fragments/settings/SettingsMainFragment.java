@@ -73,7 +73,7 @@ public class SettingsMainFragment extends BaseSettingsFragment<Object>{
 				new SectionHeaderListItem(R.string.settings_app_settings),
 				new ListItem<>(R.string.settings_behavior, 0, R.drawable.ic_tune_24px, this::onBehaviorClick),
 				new ListItem<>(R.string.settings_display, 0, R.drawable.ic_style_24px, this::onDisplayClick),
-				notificationsItem=new ListItem<>(getString(R.string.settings_notifications), SettingsAppNotificationsFragment.getTransportLabel(getActivity(), GlobalUserPreferences.pushTransport), R.drawable.ic_notifications_24px, this::onNotificationsClick)
+				notificationsItem=new ListItem<>(getString(R.string.push_notifications), SettingsAppNotificationsFragment.getTransportLabel(getActivity(), GlobalUserPreferences.pushTransport), R.drawable.ic_notifications_24px, this::onNotificationsClick)
 
 		));
 		if(AccountSessionManager.get(accountID).isEligibleForDonations()){
