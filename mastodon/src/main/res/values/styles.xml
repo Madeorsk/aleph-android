@@ -86,7 +86,7 @@
 
 		<item name="android:textColor">?colorM3OnSurface</item>
 		<item name="emptyStateElephantArt">@drawable/empty_state_elephant_light</item>
-		<item name="colorBrand">#5638CC</item>
+		<item name="colorBrand">#223D71</item>
 		<item name="colorWarningSoft">#FEF3C6</item>
 		<item name="colorWarningSoftest">#FFFBEB</item>
 		<item name="colorSuccessSoftest">#F0FDF4</item>
@@ -178,7 +178,7 @@
 
 		<item name="android:textColor">?colorM3OnSurface</item>
 		<item name="emptyStateElephantArt">@drawable/empty_state_elephant_dark</item>
-		<item name="colorBrand">#5638CC</item>
+		<item name="colorBrand">#AFC6FF</item>
 		<item name="colorWarningSoft">#7B3306</item>
 		<item name="colorWarningSoftest">#461901</item>
 		<item name="colorSuccessSoftest">#032E15</item>
@@ -418,8 +418,194 @@
 		<item name="colorM3OnSurfaceInverse">@color/masterialLight_onSurface_highContrast</item>
 	</style>
 
+	<style name="Theme.Mastodon.Light.Aleph">
+		<item name="colorM3Primary">@color/alephLight_primary</item>
+		<item name="colorM3OnPrimary">@color/alephLight_onPrimary</item>
+		<item name="colorM3PrimaryContainer">@color/alephLight_primaryContainer</item>
+		<item name="colorM3OnPrimaryContainer">@color/alephLight_onPrimaryContainer</item>
+		<item name="colorM3Secondary">@color/alephLight_secondary</item>
+		<item name="colorM3OnSecondary">@color/alephLight_onSecondary</item>
+		<item name="colorM3SecondaryContainer">@color/alephLight_secondaryContainer</item>
+		<item name="colorM3OnSecondaryContainer">@color/alephLight_onSecondaryContainer</item>
+		<item name="colorM3Tertiary">@color/alephLight_tertiary</item>
+		<item name="colorM3OnTertiary">@color/alephLight_onTertiary</item>
+		<item name="colorM3TertiaryContainer">@color/alephLight_tertiaryContainer</item>
+		<item name="colorM3OnTertiaryContainer">@color/alephLight_onTertiaryContainer</item>
+		<item name="colorM3Background">@color/alephLight_background</item>
+		<item name="colorM3OnBackground">@color/alephLight_onBackground</item>
+		<item name="colorM3Surface">@color/alephLight_surface</item>
+		<item name="colorM3OnSurface">@color/alephLight_onSurface</item>
+		<item name="colorM3SurfaceVariant">@color/alephLight_surfaceVariant</item>
+		<item name="colorM3OnSurfaceVariant">@color/alephLight_onSurfaceVariant</item>
+		<item name="colorM3Outline">@color/alephLight_outline</item>
+		<item name="colorM3OutlineVariant">@color/alephLight_outlineVariant</item>
+		<item name="colorM3PressedOverlay">@color/alephLight_onPrimary</item>
+		<item name="colorM3Error">@color/alephLight_error</item>
+		<item name="colorM3OnError">@color/alephLight_onError</item>
+		<item name="colorM3ErrorContainer">@color/alephLight_errorContainer</item>
+		<item name="colorM3OnErrorContainer">@color/alephLight_onErrorContainer</item>
+		<item name="colorM3PrimaryInverse">@color/alephDark_primary</item>
+		<item name="colorM3SurfaceInverse">@color/alephDark_surface</item>
+		<item name="colorM3OnSurfaceInverse">@color/alephDark_onSurface</item>
+	</style>
+
+	<style name="Theme.Mastodon.Dark.Aleph">
+		<item name="colorM3Primary">@color/alephDark_primary</item>
+		<item name="colorM3OnPrimary">@color/alephDark_onPrimary</item>
+		<item name="colorM3PrimaryContainer">@color/alephDark_primaryContainer</item>
+		<item name="colorM3OnPrimaryContainer">@color/alephDark_onPrimaryContainer</item>
+		<item name="colorM3Secondary">@color/alephDark_secondary</item>
+		<item name="colorM3OnSecondary">@color/alephDark_onSecondary</item>
+		<item name="colorM3SecondaryContainer">@color/alephDark_secondaryContainer</item>
+		<item name="colorM3OnSecondaryContainer">@color/alephDark_onSecondaryContainer</item>
+		<item name="colorM3Tertiary">@color/alephDark_tertiary</item>
+		<item name="colorM3OnTertiary">@color/alephDark_onTertiary</item>
+		<item name="colorM3TertiaryContainer">@color/alephDark_tertiaryContainer</item>
+		<item name="colorM3OnTertiaryContainer">@color/alephDark_onTertiaryContainer</item>
+		<item name="colorM3Background">@color/alephDark_background</item>
+		<item name="colorM3OnBackground">@color/alephDark_onBackground</item>
+		<item name="colorM3Surface">@color/alephDark_surface</item>
+		<item name="colorM3OnSurface">@color/alephDark_onSurface</item>
+		<item name="colorM3SurfaceVariant">@color/alephDark_surfaceVariant</item>
+		<item name="colorM3OnSurfaceVariant">@color/alephDark_onSurfaceVariant</item>
+		<item name="colorM3Outline">@color/alephDark_outline</item>
+		<item name="colorM3OutlineVariant">@color/alephDark_outlineVariant</item>
+		<item name="colorM3PressedOverlay">@color/alephDark_onPrimary</item>
+		<item name="colorM3Error">@color/alephDark_error</item>
+		<item name="colorM3OnError">@color/alephDark_onError</item>
+		<item name="colorM3ErrorContainer">@color/alephDark_errorContainer</item>
+		<item name="colorM3OnErrorContainer">@color/alephDark_onErrorContainer</item>
+		<item name="colorM3PrimaryInverse">@color/alephLight_primary</item>
+		<item name="colorM3SurfaceInverse">@color/alephLight_surface</item>
+		<item name="colorM3OnSurfaceInverse">@color/alephLight_onSurface</item>
+	</style>
+
+	<style name="Theme.Mastodon.Light.MediumContrast.Aleph">
+		<item name="colorM3Primary">@color/alephLight_primary_mediumContrast</item>
+		<item name="colorM3OnPrimary">@color/alephLight_onPrimary_mediumContrast</item>
+		<item name="colorM3PrimaryContainer">@color/alephLight_primaryContainer_mediumContrast</item>
+		<item name="colorM3OnPrimaryContainer">@color/alephLight_onPrimaryContainer_mediumContrast</item>
+		<item name="colorM3Secondary">@color/alephLight_secondary_mediumContrast</item>
+		<item name="colorM3OnSecondary">@color/alephLight_onSecondary_mediumContrast</item>
+		<item name="colorM3SecondaryContainer">@color/alephLight_secondaryContainer_mediumContrast</item>
+		<item name="colorM3OnSecondaryContainer">@color/alephLight_onSecondaryContainer_mediumContrast</item>
+		<item name="colorM3Tertiary">@color/alephLight_tertiary_mediumContrast</item>
+		<item name="colorM3OnTertiary">@color/alephLight_onTertiary_mediumContrast</item>
+		<item name="colorM3TertiaryContainer">@color/alephLight_tertiaryContainer_mediumContrast</item>
+		<item name="colorM3OnTertiaryContainer">@color/alephLight_onTertiaryContainer_mediumContrast</item>
+		<item name="colorM3Background">@color/alephLight_background_mediumContrast</item>
+		<item name="colorM3OnBackground">@color/alephLight_onBackground_mediumContrast</item>
+		<item name="colorM3Surface">@color/alephLight_surface_mediumContrast</item>
+		<item name="colorM3OnSurface">@color/alephLight_onSurface_mediumContrast</item>
+		<item name="colorM3SurfaceVariant">@color/alephLight_surfaceVariant_mediumContrast</item>
+		<item name="colorM3OnSurfaceVariant">@color/alephLight_onSurfaceVariant_mediumContrast</item>
+		<item name="colorM3Outline">@color/alephLight_outline_mediumContrast</item>
+		<item name="colorM3OutlineVariant">@color/alephLight_outlineVariant_mediumContrast</item>
+		<item name="colorM3PressedOverlay">@color/alephLight_onPrimary_mediumContrast</item>
+		<item name="colorM3Error">@color/alephLight_error_mediumContrast</item>
+		<item name="colorM3OnError">@color/alephLight_onError_mediumContrast</item>
+		<item name="colorM3ErrorContainer">@color/alephLight_errorContainer_mediumContrast</item>
+		<item name="colorM3OnErrorContainer">@color/alephLight_onErrorContainer_mediumContrast</item>
+		<item name="colorM3PrimaryInverse">@color/alephDark_primary_mediumContrast</item>
+		<item name="colorM3SurfaceInverse">@color/alephDark_surface_mediumContrast</item>
+		<item name="colorM3OnSurfaceInverse">@color/alephDark_onSurface_mediumContrast</item>
+	</style>
+
+	<style name="Theme.Mastodon.Dark.MediumContrast.Aleph">
+		<item name="colorM3Primary">@color/alephDark_primary_mediumContrast</item>
+		<item name="colorM3OnPrimary">@color/alephDark_onPrimary_mediumContrast</item>
+		<item name="colorM3PrimaryContainer">@color/alephDark_primaryContainer_mediumContrast</item>
+		<item name="colorM3OnPrimaryContainer">@color/alephDark_onPrimaryContainer_mediumContrast</item>
+		<item name="colorM3Secondary">@color/alephDark_secondary_mediumContrast</item>
+		<item name="colorM3OnSecondary">@color/alephDark_onSecondary_mediumContrast</item>
+		<item name="colorM3SecondaryContainer">@color/alephDark_secondaryContainer_mediumContrast</item>
+		<item name="colorM3OnSecondaryContainer">@color/alephDark_onSecondaryContainer_mediumContrast</item>
+		<item name="colorM3Tertiary">@color/alephDark_tertiary_mediumContrast</item>
+		<item name="colorM3OnTertiary">@color/alephDark_onTertiary_mediumContrast</item>
+		<item name="colorM3TertiaryContainer">@color/alephDark_tertiaryContainer_mediumContrast</item>
+		<item name="colorM3OnTertiaryContainer">@color/alephDark_onTertiaryContainer_mediumContrast</item>
+		<item name="colorM3Background">@color/alephDark_background_mediumContrast</item>
+		<item name="colorM3OnBackground">@color/alephDark_onBackground_mediumContrast</item>
+		<item name="colorM3Surface">@color/alephDark_surface_mediumContrast</item>
+		<item name="colorM3OnSurface">@color/alephDark_onSurface_mediumContrast</item>
+		<item name="colorM3SurfaceVariant">@color/alephDark_surfaceVariant_mediumContrast</item>
+		<item name="colorM3OnSurfaceVariant">@color/alephDark_onSurfaceVariant_mediumContrast</item>
+		<item name="colorM3Outline">@color/alephDark_outline_mediumContrast</item>
+		<item name="colorM3OutlineVariant">@color/alephDark_outlineVariant_mediumContrast</item>
+		<item name="colorM3PressedOverlay">@color/alephDark_onPrimary_mediumContrast</item>
+		<item name="colorM3Error">@color/alephDark_error_mediumContrast</item>
+		<item name="colorM3OnError">@color/alephDark_onError_mediumContrast</item>
+		<item name="colorM3ErrorContainer">@color/alephDark_errorContainer_mediumContrast</item>
+		<item name="colorM3OnErrorContainer">@color/alephDark_onErrorContainer_mediumContrast</item>
+		<item name="colorM3PrimaryInverse">@color/alephLight_primary_mediumContrast</item>
+		<item name="colorM3SurfaceInverse">@color/alephLight_surface_mediumContrast</item>
+		<item name="colorM3OnSurfaceInverse">@color/alephLight_onSurface_mediumContrast</item>
+	</style>
+
+	<style name="Theme.Mastodon.Light.HighContrast.Aleph">
+		<item name="colorM3Primary">@color/alephLight_primary_highContrast</item>
+		<item name="colorM3OnPrimary">@color/alephLight_onPrimary_highContrast</item>
+		<item name="colorM3PrimaryContainer">@color/alephLight_primaryContainer_highContrast</item>
+		<item name="colorM3OnPrimaryContainer">@color/alephLight_onPrimaryContainer_highContrast</item>
+		<item name="colorM3Secondary">@color/alephLight_secondary_highContrast</item>
+		<item name="colorM3OnSecondary">@color/alephLight_onSecondary_highContrast</item>
+		<item name="colorM3SecondaryContainer">@color/alephLight_secondaryContainer_highContrast</item>
+		<item name="colorM3OnSecondaryContainer">@color/alephLight_onSecondaryContainer_highContrast</item>
+		<item name="colorM3Tertiary">@color/alephLight_tertiary_highContrast</item>
+		<item name="colorM3OnTertiary">@color/alephLight_onTertiary_highContrast</item>
+		<item name="colorM3TertiaryContainer">@color/alephLight_tertiaryContainer_highContrast</item>
+		<item name="colorM3OnTertiaryContainer">@color/alephLight_onTertiaryContainer_highContrast</item>
+		<item name="colorM3Background">@color/alephLight_background_highContrast</item>
+		<item name="colorM3OnBackground">@color/alephLight_onBackground_highContrast</item>
+		<item name="colorM3Surface">@color/alephLight_surface_highContrast</item>
+		<item name="colorM3OnSurface">@color/alephLight_onSurface_highContrast</item>
+		<item name="colorM3SurfaceVariant">@color/alephLight_surfaceVariant_highContrast</item>
+		<item name="colorM3OnSurfaceVariant">@color/alephLight_onSurfaceVariant_highContrast</item>
+		<item name="colorM3Outline">@color/alephLight_outline_highContrast</item>
+		<item name="colorM3OutlineVariant">@color/alephLight_outlineVariant_highContrast</item>
+		<item name="colorM3PressedOverlay">@color/alephLight_onPrimary_highContrast</item>
+		<item name="colorM3Error">@color/alephLight_error_highContrast</item>
+		<item name="colorM3OnError">@color/alephLight_onError_highContrast</item>
+		<item name="colorM3ErrorContainer">@color/alephLight_errorContainer_highContrast</item>
+		<item name="colorM3OnErrorContainer">@color/alephLight_onErrorContainer_highContrast</item>
+		<item name="colorM3PrimaryInverse">@color/alephDark_primary_highContrast</item>
+		<item name="colorM3SurfaceInverse">@color/alephDark_surface_highContrast</item>
+		<item name="colorM3OnSurfaceInverse">@color/alephDark_onSurface_highContrast</item>
+	</style>
+
+	<style name="Theme.Mastodon.Dark.HighContrast.Aleph">
+		<item name="colorM3Primary">@color/alephDark_primary_highContrast</item>
+		<item name="colorM3OnPrimary">@color/alephDark_onPrimary_highContrast</item>
+		<item name="colorM3PrimaryContainer">@color/alephDark_primaryContainer_highContrast</item>
+		<item name="colorM3OnPrimaryContainer">@color/alephDark_onPrimaryContainer_highContrast</item>
+		<item name="colorM3Secondary">@color/alephDark_secondary_highContrast</item>
+		<item name="colorM3OnSecondary">@color/alephDark_onSecondary_highContrast</item>
+		<item name="colorM3SecondaryContainer">@color/alephDark_secondaryContainer_highContrast</item>
+		<item name="colorM3OnSecondaryContainer">@color/alephDark_onSecondaryContainer_highContrast</item>
+		<item name="colorM3Tertiary">@color/alephDark_tertiary_highContrast</item>
+		<item name="colorM3OnTertiary">@color/alephDark_onTertiary_highContrast</item>
+		<item name="colorM3TertiaryContainer">@color/alephDark_tertiaryContainer_highContrast</item>
+		<item name="colorM3OnTertiaryContainer">@color/alephDark_onTertiaryContainer_highContrast</item>
+		<item name="colorM3Background">@color/alephDark_background_highContrast</item>
+		<item name="colorM3OnBackground">@color/alephDark_onBackground_highContrast</item>
+		<item name="colorM3Surface">@color/alephDark_surface_highContrast</item>
+		<item name="colorM3OnSurface">@color/alephDark_onSurface_highContrast</item>
+		<item name="colorM3SurfaceVariant">@color/alephDark_surfaceVariant_highContrast</item>
+		<item name="colorM3OnSurfaceVariant">@color/alephDark_onSurfaceVariant_highContrast</item>
+		<item name="colorM3Outline">@color/alephDark_outline_highContrast</item>
+		<item name="colorM3OutlineVariant">@color/alephDark_outlineVariant_highContrast</item>
+		<item name="colorM3PressedOverlay">@color/alephDark_onPrimary_highContrast</item>
+		<item name="colorM3Error">@color/alephDark_error_highContrast</item>
+		<item name="colorM3OnError">@color/alephDark_onError_highContrast</item>
+		<item name="colorM3ErrorContainer">@color/alephDark_errorContainer_highContrast</item>
+		<item name="colorM3OnErrorContainer">@color/alephDark_onErrorContainer_highContrast</item>
+		<item name="colorM3PrimaryInverse">@color/alephLight_primary_highContrast</item>
+		<item name="colorM3SurfaceInverse">@color/alephLight_surface_highContrast</item>
+		<item name="colorM3OnSurfaceInverse">@color/alephLight_onSurface_highContrast</item>
+	</style>
+
 	<style name="Theme.Mastodon.Dark.SplashFragment">
-		<item name="colorM3Primary">#563ACC</item>
+		<item name="colorM3Primary">#223D71</item>
 		<item name="colorM3OnPrimary">#FFF</item>
 		<item name="colorM3Outline">#FFF</item>
 		<item name="colorM3OnSurface">#FFF</item>
@@ -431,6 +617,9 @@
 	<style name="Theme.Mastodon.AutoLightDark.Masterial" parent="Theme.Mastodon.Light.Masterial"/>
 	<style name="Theme.Mastodon.AutoLightDark.MediumContrast.Masterial" parent="Theme.Mastodon.Light.MediumContrast.Masterial"/>
 	<style name="Theme.Mastodon.AutoLightDark.HighContrast.Masterial" parent="Theme.Mastodon.Light.HighContrast.Masterial"/>
+	<style name="Theme.Mastodon.AutoLightDark.Aleph" parent="Theme.Mastodon.Light.Aleph"/>
+	<style name="Theme.Mastodon.AutoLightDark.MediumContrast.Aleph" parent="Theme.Mastodon.Light.MediumContrast.Aleph"/>
+	<style name="Theme.Mastodon.AutoLightDark.HighContrast.Aleph" parent="Theme.Mastodon.Light.HighContrast.Aleph"/>
 
 	<style name="Theme.Mastodon.Toolbar" parent="android:ThemeOverlay.Material.ActionBar">
 		<item name="android:colorPrimary">?colorM3Background</item>

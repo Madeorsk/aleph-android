@@ -828,19 +828,19 @@ public class UiUtils{
 		}else{
 			return switch(pref){
 				case AUTO -> switch(getColorContrastMode(context)){
-					case DEFAULT -> R.style.Theme_Mastodon_AutoLightDark_Masterial;
-					case MEDIUM -> R.style.Theme_Mastodon_AutoLightDark_MediumContrast_Masterial;
-					case HIGH -> R.style.Theme_Mastodon_AutoLightDark_HighContrast_Masterial;
+					case DEFAULT -> R.style.Theme_Mastodon_AutoLightDark_Aleph;
+					case MEDIUM -> R.style.Theme_Mastodon_AutoLightDark_MediumContrast_Aleph;
+					case HIGH -> R.style.Theme_Mastodon_AutoLightDark_HighContrast_Aleph;
 				};
 				case LIGHT -> switch(getColorContrastMode(context)){
-					case DEFAULT -> R.style.Theme_Mastodon_Light_Masterial;
-					case MEDIUM -> R.style.Theme_Mastodon_Light_MediumContrast_Masterial;
-					case HIGH -> R.style.Theme_Mastodon_Light_HighContrast_Masterial;
+					case DEFAULT -> R.style.Theme_Mastodon_Light_Aleph;
+					case MEDIUM -> R.style.Theme_Mastodon_Light_MediumContrast_Aleph;
+					case HIGH -> R.style.Theme_Mastodon_Light_HighContrast_Aleph;
 				};
 				case DARK -> switch(getColorContrastMode(context)){
-					case DEFAULT -> R.style.Theme_Mastodon_Dark_Masterial;
-					case MEDIUM -> R.style.Theme_Mastodon_Dark_MediumContrast_Masterial;
-					case HIGH -> R.style.Theme_Mastodon_Dark_HighContrast_Masterial;
+					case DEFAULT -> R.style.Theme_Mastodon_Dark_Aleph;
+					case MEDIUM -> R.style.Theme_Mastodon_Dark_MediumContrast_Aleph;
+					case HIGH -> R.style.Theme_Mastodon_Dark_HighContrast_Aleph;
 				};
 			};
 		}
