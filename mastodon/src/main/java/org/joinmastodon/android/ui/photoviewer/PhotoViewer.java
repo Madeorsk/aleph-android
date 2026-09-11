@@ -147,7 +147,6 @@ public class PhotoViewer implements ZoomPanView.Listener{
 	private View postActions;
 	private View replyBtn, boostBtn, favoriteBtn, shareBtn, bookmarkBtn;
 	private TextView replyText, boostText, favoriteText;
-	private ImageView bookmarkIcon;
 	private boolean uiVisible=true;
 	private AudioManager.OnAudioFocusChangeListener audioFocusListener=this::onAudioFocusChanged;
 	private Runnable uiAutoHider=()->{
@@ -295,7 +294,7 @@ public class PhotoViewer implements ZoomPanView.Listener{
 		replyText=uiOverlay.findViewById(R.id.reply);
 		boostText=uiOverlay.findViewById(R.id.boost);
 		favoriteText=uiOverlay.findViewById(R.id.favorite);
-		bookmarkIcon=uiOverlay.findViewById(R.id.bookmark);
+		ImageView bookmarkIcon=uiOverlay.findViewById(R.id.bookmark);
 
 		float[] hsb={0, 0, 0};
 		Color.colorToHSV(UiUtils.getThemeColor(activity, R.attr.colorM3Primary), hsb);

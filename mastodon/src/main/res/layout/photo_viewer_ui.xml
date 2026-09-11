@@ -166,6 +166,7 @@
 					android:id="@+id/favorite_btn"
 					android:layout_width="wrap_content"
 					android:layout_height="match_parent"
+					android:layout_marginEnd="8dp"
 					android:paddingHorizontal="8dp"
 					android:background="@drawable/bg_photo_viewer_action"
 					android:minWidth="64dp">
@@ -184,29 +185,29 @@
 						tools:text="123"/>
 				</FrameLayout>
 
-				<Space
-					android:layout_width="0px"
-					android:layout_height="1px"
-					android:layout_weight="1"/>
-
 				<FrameLayout
 					android:id="@+id/bookmark_btn"
 					android:layout_width="wrap_content"
 					android:layout_height="match_parent"
 					android:paddingHorizontal="8dp"
-					android:background="@drawable/bg_photo_viewer_action_centered"
-					android:minWidth="34dp">
+					android:background="@drawable/bg_photo_viewer_action"
+					android:minWidth="64dp">
 					<ImageView
 						android:id="@+id/bookmark"
 						android:layout_width="wrap_content"
 						android:layout_height="24dp"
-						android:layout_gravity="center"
+						android:layout_gravity="center|start"
 						android:src="@drawable/ic_bookmark_20px_selector"
 						android:tint="#80ffffff"
 						android:tintMode="src_in"
 						android:duplicateParentState="true"
 						android:gravity="center_vertical"/>
 				</FrameLayout>
+
+				<Space
+					android:layout_width="0px"
+					android:layout_height="1px"
+					android:layout_weight="1"/>
 
 				<FrameLayout
 					android:id="@+id/share_btn"

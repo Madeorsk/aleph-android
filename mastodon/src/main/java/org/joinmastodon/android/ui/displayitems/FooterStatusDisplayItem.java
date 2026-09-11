@@ -53,8 +53,7 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 
 	public static class Holder extends StatusDisplayItem.Holder<FooterStatusDisplayItem>{
 		private final TextView reply, boost, favorite;
-		private final ImageView bookmark, share;
-		private final ColorStateList boostColors, favoriteColors, bookmarkColors;
+		private final ImageView share;
 		private final View replyBtn, boostBtn, favoriteBtn, bookmarkBtn, shareBtn;
 		private final PopupMenu boostLongTapMenu, favoriteLongTapMenu;
 		private final View spacer1, spacer2, spacer3;
@@ -73,7 +72,7 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			reply=findViewById(R.id.reply);
 			boost=findViewById(R.id.boost);
 			favorite=findViewById(R.id.favorite);
-			bookmark=findViewById(R.id.bookmark);
+			ImageView bookmark=findViewById(R.id.bookmark);
 			share=findViewById(R.id.share);
 			spacer1=findViewById(R.id.spacer1);
 			spacer2=findViewById(R.id.spacer2);
@@ -84,15 +83,14 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			hsb[1]+=0.1f;
 			hsb[2]+=0.16f;
 
-			boostColors=buttonColors(activity, Color.HSVToColor(hsb));
-			favoriteColors=buttonColors(activity, UiUtils.getThemeColor(activity, R.attr.colorFavorite));
-			bookmarkColors=buttonColors(activity, UiUtils.getThemeColor(activity, R.attr.colorBookmark));
+			ColorStateList boostColors=buttonColors(activity, Color.HSVToColor(hsb));
+			ColorStateList favoriteColors=buttonColors(activity, UiUtils.getThemeColor(activity, R.attr.colorFavorite));
 
 			boost.setTextColor(boostColors);
 			boost.setCompoundDrawableTintList(boostColors);
 			favorite.setTextColor(favoriteColors);
 			favorite.setCompoundDrawableTintList(favoriteColors);
-			bookmark.setImageTintList(bookmarkColors);
+			bookmark.setImageTintList(buttonColors(activity, UiUtils.getThemeColor(activity, R.attr.colorBookmark)));
 
 			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.N){
 				UiUtils.fixCompoundDrawableTintOnAndroid6(reply);

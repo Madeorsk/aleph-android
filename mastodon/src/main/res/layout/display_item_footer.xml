@@ -12,7 +12,7 @@
 		android:id="@+id/reply_btn"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:layout_marginEnd="4dp"
+		android:layout_marginEnd="2dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action"
 		android:minWidth="56dp">
@@ -41,7 +41,7 @@
 		android:id="@+id/boost_btn"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:layout_marginHorizontal="4dp"
+		android:layout_marginHorizontal="2dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action"
 		android:minWidth="56dp">
@@ -70,7 +70,7 @@
 		android:id="@+id/favorite_btn"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:layout_marginHorizontal="4dp"
+		android:layout_marginHorizontal="2dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action"
 		android:minWidth="56dp">
@@ -99,7 +99,7 @@
 		android:id="@+id/bookmark_btn"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:layout_marginHorizontal="4dp"
+		android:layout_marginHorizontal="2dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action"
 		android:minWidth="56dp">
@@ -123,7 +123,7 @@
 		android:id="@+id/share_btn"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:layout_marginStart="4dp"
+		android:layout_marginStart="2dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action_centered"
 		android:minWidth="34dp">
