@@ -162,6 +162,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	private List<EmojiCategory> customEmojis;
 	private CustomEmojiPopupKeyboard emojiKeyboard;
 	private Status replyTo;
+	private String replyToId;
 	private Status quotedStatus;
 	private String initialText;
 	private String uuid;
@@ -239,6 +240,8 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 
 		if(getArguments().containsKey("quote"))
 			quotedStatus=Parcels.unwrap(getArguments().getParcelable("quote"));
+
+		replyToId=getArguments().getString("replyToId");
 	}
 
 	@Override
@@ -862,6 +865,8 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		}
 		if(replyTo!=null){
 			req.inReplyToId=replyTo.id;
+		}else if(replyToId!=null){
+			req.inReplyToId=replyToId;
 		}
 		if(!pollViewController.isEmpty()){
 			req.poll=pollViewController.getPollForRequest();
