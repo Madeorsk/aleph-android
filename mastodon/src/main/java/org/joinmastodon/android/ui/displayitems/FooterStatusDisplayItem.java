@@ -218,9 +218,7 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 
 		private boolean onFavoriteLongClick(View v){
 			MenuItem favorite=favoriteLongTapMenu.getMenu().findItem(R.id.favorite);
-			MenuItem bookmark=favoriteLongTapMenu.getMenu().findItem(R.id.bookmark);
 			favorite.setTitle(item.status.favourited ? R.string.undo_favorite : R.string.button_favorite);
-			bookmark.setTitle(item.status.bookmarked ? R.string.remove_bookmark : R.string.add_bookmark);
 			favoriteLongTapMenu.show();
 			return true;
 		}
@@ -231,8 +229,6 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 				onFavoriteClick(null);
 			}else if(id==R.id.boost){
 				onBoostClick(null);
-			}else if(id==R.id.bookmark){
-				AccountSessionManager.getInstance().getAccount(this.item.accountID).getStatusInteractionController().setBookmarked(this.item.status, !this.item.status.bookmarked);
 			}else if(id==R.id.view_favorites){
 				startAccountListFragment(StatusFavoritesListFragment.class);
 			}else if(id==R.id.view_boosts){
