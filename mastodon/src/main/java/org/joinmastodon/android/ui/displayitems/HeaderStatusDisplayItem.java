@@ -208,8 +208,6 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 						item.callbacks.putRelationship(account.id, rel);
 						Toast.makeText(activity, activity.getString(rel.following ? R.string.followed_user : rel.requested ? R.string.following_user_requested : R.string.unfollowed_user, account.getDisplayUsername()), Toast.LENGTH_SHORT).show();
 					}, "status");
-				}else if(id==R.id.bookmark){
-					AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setBookmarked(item.status, !item.status.bookmarked);
 				}else if(id==R.id.share){
 					UiUtils.openSystemShareSheet(activity, item.status);
 				}else if(id==R.id.translate){
@@ -393,19 +391,15 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 			MenuItem block=menu.findItem(R.id.block);
 			MenuItem report=menu.findItem(R.id.report);
 			MenuItem follow=menu.findItem(R.id.follow);
-			MenuItem bookmark=menu.findItem(R.id.bookmark);
 			MenuItem pin=menu.findItem(R.id.pin);
 			MenuItem muteConversation=menu.findItem(R.id.mute_conversation);
 			MenuItem removeQuote=menu.findItem(R.id.remove_quote);
 			if(item.status!=null){
-				bookmark.setVisible(true);
-				bookmark.setTitle(item.status.bookmarked ? R.string.remove_bookmark : R.string.add_bookmark);
 				pin.setVisible(item.status.pinned!=null && isOwnPost);
 				if(item.status.pinned!=null && isOwnPost){
 					pin.setTitle(item.status.pinned ? R.string.unpin_post : R.string.pin_post);
 				}
 			}else{
-				bookmark.setVisible(false);
 				pin.setVisible(false);
 				removeQuote.setVisible(false);
 			}

@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.Insets;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -293,7 +294,20 @@ public class PhotoViewer implements ZoomPanView.Listener{
 		replyText=uiOverlay.findViewById(R.id.reply);
 		boostText=uiOverlay.findViewById(R.id.boost);
 		favoriteText=uiOverlay.findViewById(R.id.favorite);
-		
+		ImageView bookmarkIcon=uiOverlay.findViewById(R.id.bookmark);
+
+		float[] hsb={0, 0, 0};
+		Color.colorToHSV(UiUtils.getThemeColor(activity, R.attr.colorM3Primary), hsb);
+		hsb[1]+=0.1f;
+		hsb[2]+=0.16f;
+		ColorStateList boostColors=actionColors(Color.HSVToColor(hsb));
+		ColorStateList favoriteColors=actionColors(UiUtils.getThemeColor(activity, R.attr.colorFavorite));
+		boostText.setTextColor(boostColors);
+		boostText.setCompoundDrawableTintList(boostColors);
+		favoriteText.setTextColor(favoriteColors);
+		favoriteText.setCompoundDrawableTintList(favoriteColors);
+		bookmarkIcon.setImageTintList(actionColors(UiUtils.getThemeColor(activity, R.attr.colorBookmark)));
+
 		uiOverlay.setAlpha(0f);
 		videoControls=uiOverlay.findViewById(R.id.video_player_controls);
 		videoSeekBar=uiOverlay.findViewById(R.id.seekbar);
@@ -693,6 +707,20 @@ public class PhotoViewer implements ZoomPanView.Listener{
 		}, activity.getTheme());
 		d.setBounds(0, 0, V.dp(20), V.dp(20));
 		boostText.setCompoundDrawablesRelative(d, null, null, null);
+	}
+
+	/**
+	 * Builds the tint of a post action button: {@code activeColor} while selected, translucent white
+	 * otherwise, which stays readable over a photo.
+	 */
+	private static ColorStateList actionColors(int activeColor){
+		return new ColorStateList(new int[][]{
+				{android.R.attr.state_selected},
+				{}
+		}, new int[]{
+				activeColor,
+				0x80ffffff
+		});
 	}
 
 	private void bindActionButton(TextView btn, long count){

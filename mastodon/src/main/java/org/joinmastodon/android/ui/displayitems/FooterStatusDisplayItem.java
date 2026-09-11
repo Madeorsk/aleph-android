@@ -54,10 +54,9 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 	public static class Holder extends StatusDisplayItem.Holder<FooterStatusDisplayItem>{
 		private final TextView reply, boost, favorite;
 		private final ImageView share;
-		private final ColorStateList buttonColors;
-		private final View replyBtn, boostBtn, favoriteBtn, shareBtn;
+		private final View replyBtn, boostBtn, favoriteBtn, bookmarkBtn, shareBtn;
 		private final PopupMenu boostLongTapMenu, favoriteLongTapMenu;
-		private final View spacer1, spacer2;
+		private final View spacer1, spacer2, spacer3;
 
 		private final View.AccessibilityDelegate buttonAccessibilityDelegate=new View.AccessibilityDelegate(){
 			@Override
@@ -73,29 +72,25 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			reply=findViewById(R.id.reply);
 			boost=findViewById(R.id.boost);
 			favorite=findViewById(R.id.favorite);
+			ImageView bookmark=findViewById(R.id.bookmark);
 			share=findViewById(R.id.share);
 			spacer1=findViewById(R.id.spacer1);
 			spacer2=findViewById(R.id.spacer2);
+			spacer3=findViewById(R.id.spacer3);
 
 			float[] hsb={0, 0, 0};
 			Color.colorToHSV(UiUtils.getThemeColor(activity, R.attr.colorM3Primary), hsb);
 			hsb[1]+=0.1f;
 			hsb[2]+=0.16f;
 
-			buttonColors=new ColorStateList(new int[][]{
-					{android.R.attr.state_selected},
-					{android.R.attr.state_enabled},
-					{}
-			}, new int[]{
-					Color.HSVToColor(hsb),
-					UiUtils.getThemeColor(activity, R.attr.colorM3Outline),
-					UiUtils.getThemeColor(activity, R.attr.colorM3Outline) & 0x80FFFFFF
-			});
+			ColorStateList boostColors=buttonColors(activity, Color.HSVToColor(hsb));
+			ColorStateList favoriteColors=buttonColors(activity, UiUtils.getThemeColor(activity, R.attr.colorFavorite));
 
-			boost.setTextColor(buttonColors);
-			boost.setCompoundDrawableTintList(buttonColors);
-			favorite.setTextColor(buttonColors);
-			favorite.setCompoundDrawableTintList(buttonColors);
+			boost.setTextColor(boostColors);
+			boost.setCompoundDrawableTintList(boostColors);
+			favorite.setTextColor(favoriteColors);
+			favorite.setCompoundDrawableTintList(favoriteColors);
+			bookmark.setImageTintList(buttonColors(activity, UiUtils.getThemeColor(activity, R.attr.colorBookmark)));
 
 			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.N){
 				UiUtils.fixCompoundDrawableTintOnAndroid6(reply);
@@ -105,6 +100,7 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			replyBtn=findViewById(R.id.reply_btn);
 			boostBtn=findViewById(R.id.boost_btn);
 			favoriteBtn=findViewById(R.id.favorite_btn);
+			bookmarkBtn=findViewById(R.id.bookmark_btn);
 			shareBtn=findViewById(R.id.share_btn);
 			replyBtn.setOnClickListener(this::onReplyClick);
 			replyBtn.setAccessibilityDelegate(buttonAccessibilityDelegate);
@@ -114,6 +110,8 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			favoriteBtn.setOnClickListener(this::onFavoriteClick);
 			favoriteBtn.setOnLongClickListener(this::onFavoriteLongClick);
 			favoriteBtn.setAccessibilityDelegate(buttonAccessibilityDelegate);
+			bookmarkBtn.setOnClickListener(this::onBookmarkClick);
+			bookmarkBtn.setAccessibilityDelegate(buttonAccessibilityDelegate);
 			shareBtn.setOnClickListener(this::onShareClick);
 			shareBtn.setAccessibilityDelegate(buttonAccessibilityDelegate);
 
@@ -129,12 +127,14 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 		public void onBind(FooterStatusDisplayItem item){
 			spacer1.setVisibility(item.fullWidth ? View.VISIBLE : View.GONE);
 			spacer2.setVisibility(item.fullWidth ? View.VISIBLE : View.GONE);
+			spacer3.setVisibility(item.fullWidth ? View.VISIBLE : View.GONE);
 			itemView.setPaddingRelative(V.dp(item.fullWidth ? 8 : 56), itemView.getPaddingTop(), itemView.getPaddingEnd(), itemView.getPaddingBottom());
 			bindButton(reply, item.status.repliesCount);
 			bindButton(boost, item.status.reblogsCount);
 			bindButton(favorite, item.status.favouritesCount);
 			boostBtn.setSelected(item.status.reblogged);
 			favoriteBtn.setSelected(item.status.favourited);
+			bookmarkBtn.setSelected(item.status.bookmarked);
 			boolean isOwn=item.status.account.id.equals(AccountSessionManager.getInstance().getAccount(item.accountID).self.id);
 			boostBtn.setEnabled(item.status.visibility==StatusPrivacy.PUBLIC || item.status.visibility==StatusPrivacy.UNLISTED
 					|| (item.status.visibility==StatusPrivacy.PRIVATE && isOwn));
@@ -145,6 +145,22 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			}, itemView.getContext().getTheme());
 			d.setBounds(0, 0, V.dp(20), V.dp(20));
 			boost.setCompoundDrawablesRelative(d, null, null, null);
+		}
+
+		/**
+		 * Builds the tint of an action button: {@code activeColor} while selected, the outline color
+		 * otherwise, half-transparent when disabled.
+		 */
+		private static ColorStateList buttonColors(Context context, int activeColor){
+			return new ColorStateList(new int[][]{
+					{android.R.attr.state_selected},
+					{android.R.attr.state_enabled},
+					{}
+			}, new int[]{
+					activeColor,
+					UiUtils.getThemeColor(context, R.attr.colorM3Outline),
+					UiUtils.getThemeColor(context, R.attr.colorM3Outline) & 0x80FFFFFF
+			});
 		}
 
 		private void bindButton(TextView btn, long count){
@@ -182,6 +198,11 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			bindButton(favorite, item.status.favouritesCount);
 		}
 
+		private void onBookmarkClick(View v){
+			AccountSessionManager.getInstance().getAccount(item.accountID).getStatusInteractionController().setBookmarked(item.status, !item.status.bookmarked);
+			bookmarkBtn.setSelected(item.status.bookmarked);
+		}
+
 		private void onShareClick(View v){
 			UiUtils.openSystemShareSheet(v.getContext(), item.status);
 		}
@@ -195,9 +216,7 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 
 		private boolean onFavoriteLongClick(View v){
 			MenuItem favorite=favoriteLongTapMenu.getMenu().findItem(R.id.favorite);
-			MenuItem bookmark=favoriteLongTapMenu.getMenu().findItem(R.id.bookmark);
 			favorite.setTitle(item.status.favourited ? R.string.undo_favorite : R.string.button_favorite);
-			bookmark.setTitle(item.status.bookmarked ? R.string.remove_bookmark : R.string.add_bookmark);
 			favoriteLongTapMenu.show();
 			return true;
 		}
@@ -208,8 +227,6 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 				onFavoriteClick(null);
 			}else if(id==R.id.boost){
 				onBoostClick(null);
-			}else if(id==R.id.bookmark){
-				AccountSessionManager.getInstance().getAccount(this.item.accountID).getStatusInteractionController().setBookmarked(this.item.status, !this.item.status.bookmarked);
 			}else if(id==R.id.view_favorites){
 				startAccountListFragment(StatusFavoritesListFragment.class);
 			}else if(id==R.id.view_boosts){
@@ -232,6 +249,8 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 				return R.string.button_reblog;
 			if(id==R.id.favorite_btn)
 				return R.string.button_favorite;
+			if(id==R.id.bookmark_btn)
+				return item.status.bookmarked ? R.string.remove_bookmark : R.string.add_bookmark;
 			if(id==R.id.share_btn)
 				return R.string.button_share;
 			return 0;

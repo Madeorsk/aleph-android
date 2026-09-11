@@ -4,6 +4,7 @@ WHAT ALEPH ADDS
 
 ■ UnifiedPush support: push notifications without Google Play Services
 ■ Post content types: choose plain text, Markdown or HTML when composing, with a per-account default, on servers that support it
+■ Bookmark button: bookmark a post right from its action buttons, with boost, favourite and bookmark each coloured when active
 
 ⚠️ Some Aleph features are written with the help of generative AI (under human review).
 
