@@ -4,6 +4,7 @@ CE QU'ALEPH AJOUTE
 
 ■ Support d'UnifiedPush : des notifications push sans les services Google Play
 ■ Types de contenu : choisissez texte brut, Markdown ou HTML au moment de la rédaction, avec un choix par défaut par compte, sur les serveurs qui le prennent en charge
+■ Bouton marque-page : ajoutez un message à vos marque-pages directement depuis ses boutons d'action, chaque action prenant sa couleur quand elle est active
 
 ⚠️ Certaines fonctionnalités d'Aleph sont écrites avec l'aide d'IA génératives (sous relecture humaine).
 
