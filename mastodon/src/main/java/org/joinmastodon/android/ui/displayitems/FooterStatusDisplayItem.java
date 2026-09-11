@@ -54,7 +54,7 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 	public static class Holder extends StatusDisplayItem.Holder<FooterStatusDisplayItem>{
 		private final TextView reply, boost, favorite;
 		private final ImageView share;
-		private final ColorStateList buttonColors;
+		private final ColorStateList boostColors, favoriteColors;
 		private final View replyBtn, boostBtn, favoriteBtn, shareBtn;
 		private final PopupMenu boostLongTapMenu, favoriteLongTapMenu;
 		private final View spacer1, spacer2;
@@ -82,20 +82,13 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			hsb[1]+=0.1f;
 			hsb[2]+=0.16f;
 
-			buttonColors=new ColorStateList(new int[][]{
-					{android.R.attr.state_selected},
-					{android.R.attr.state_enabled},
-					{}
-			}, new int[]{
-					Color.HSVToColor(hsb),
-					UiUtils.getThemeColor(activity, R.attr.colorM3Outline),
-					UiUtils.getThemeColor(activity, R.attr.colorM3Outline) & 0x80FFFFFF
-			});
+			boostColors=buttonColors(activity, Color.HSVToColor(hsb));
+			favoriteColors=buttonColors(activity, UiUtils.getThemeColor(activity, R.attr.colorFavorite));
 
-			boost.setTextColor(buttonColors);
-			boost.setCompoundDrawableTintList(buttonColors);
-			favorite.setTextColor(buttonColors);
-			favorite.setCompoundDrawableTintList(buttonColors);
+			boost.setTextColor(boostColors);
+			boost.setCompoundDrawableTintList(boostColors);
+			favorite.setTextColor(favoriteColors);
+			favorite.setCompoundDrawableTintList(favoriteColors);
 
 			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.N){
 				UiUtils.fixCompoundDrawableTintOnAndroid6(reply);
@@ -145,6 +138,22 @@ public class FooterStatusDisplayItem extends StatusDisplayItem{
 			}, itemView.getContext().getTheme());
 			d.setBounds(0, 0, V.dp(20), V.dp(20));
 			boost.setCompoundDrawablesRelative(d, null, null, null);
+		}
+
+		/**
+		 * Builds the tint of an action button: {@code activeColor} while selected, the outline color
+		 * otherwise, half-transparent when disabled.
+		 */
+		private static ColorStateList buttonColors(Context context, int activeColor){
+			return new ColorStateList(new int[][]{
+					{android.R.attr.state_selected},
+					{android.R.attr.state_enabled},
+					{}
+			}, new int[]{
+					activeColor,
+					UiUtils.getThemeColor(context, R.attr.colorM3Outline),
+					UiUtils.getThemeColor(context, R.attr.colorM3Outline) & 0x80FFFFFF
+			});
 		}
 
 		private void bindButton(TextView btn, long count){
