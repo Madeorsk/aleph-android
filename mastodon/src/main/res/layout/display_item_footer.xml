@@ -15,7 +15,7 @@
 		android:layout_marginEnd="4dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action"
-		android:minWidth="64dp">
+		android:minWidth="56dp">
 		<TextView
 			android:id="@+id/reply"
 			android:layout_width="wrap_content"
@@ -44,7 +44,7 @@
 		android:layout_marginHorizontal="4dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action"
-		android:minWidth="64dp">
+		android:minWidth="56dp">
 		<TextView
 			android:id="@+id/boost"
 			android:layout_width="wrap_content"
@@ -73,7 +73,7 @@
 		android:layout_marginHorizontal="4dp"
 		android:paddingHorizontal="8dp"
 		android:background="@drawable/bg_status_action"
-		android:minWidth="64dp">
+		android:minWidth="56dp">
 		<TextView
 			android:id="@+id/favorite"
 			android:layout_width="wrap_content"
@@ -87,6 +87,31 @@
 			android:textAppearance="@style/m3_label_medium"
 			android:duplicateParentState="true"
 			tools:text="123"/>
+	</FrameLayout>
+
+	<Space
+		android:id="@+id/spacer3"
+		android:layout_width="0px"
+		android:layout_height="1px"
+		android:layout_weight="1"/>
+
+	<FrameLayout
+		android:id="@+id/bookmark_btn"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:layout_marginHorizontal="4dp"
+		android:paddingHorizontal="8dp"
+		android:background="@drawable/bg_status_action"
+		android:minWidth="56dp">
+		<ImageView
+			android:id="@+id/bookmark"
+			android:layout_width="wrap_content"
+			android:layout_height="24dp"
+			android:layout_gravity="center|start"
+			android:src="@drawable/ic_bookmark_20px_selector"
+			android:tint="?colorM3Outline"
+			android:gravity="center_vertical"
+			android:duplicateParentState="true"/>
 	</FrameLayout>
 
 	<Space
