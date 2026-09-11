@@ -86,7 +86,7 @@
 
 		<item name="android:textColor">?colorM3OnSurface</item>
 		<item name="emptyStateElephantArt">@drawable/empty_state_elephant_light</item>
-		<item name="colorBrand">#5638CC</item>
+		<item name="colorBrand">#223D71</item>
 		<item name="colorWarningSoft">#FEF3C6</item>
 		<item name="colorWarningSoftest">#FFFBEB</item>
 		<item name="colorSuccessSoftest">#F0FDF4</item>
@@ -178,7 +178,7 @@
 
 		<item name="android:textColor">?colorM3OnSurface</item>
 		<item name="emptyStateElephantArt">@drawable/empty_state_elephant_dark</item>
-		<item name="colorBrand">#5638CC</item>
+		<item name="colorBrand">#AFC6FF</item>
 		<item name="colorWarningSoft">#7B3306</item>
 		<item name="colorWarningSoftest">#461901</item>
 		<item name="colorSuccessSoftest">#032E15</item>
@@ -605,7 +605,7 @@
 	</style>
 
 	<style name="Theme.Mastodon.Dark.SplashFragment">
-		<item name="colorM3Primary">#563ACC</item>
+		<item name="colorM3Primary">#223D71</item>
 		<item name="colorM3OnPrimary">#FFF</item>
 		<item name="colorM3Outline">#FFF</item>
 		<item name="colorM3OnSurface">#FFF</item>
