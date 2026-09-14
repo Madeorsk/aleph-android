@@ -104,6 +104,7 @@ import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -185,6 +186,11 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	public Instance instance;
 
 	public Status editingStatus;
+	public Status redraftStatus;
+	/**
+	 * The post the composer is prefilled from: the one being edited, or the one being redrafted.
+	 */
+	public Status sourceStatus;
 	private boolean creatingView;
 	private boolean ignoreSelectionChanges=false;
 	private MenuItem publishButton;
@@ -219,6 +225,12 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		if(getArguments().containsKey("editStatus")){
 			editingStatus=Parcels.unwrap(getArguments().getParcelable("editStatus"));
 		}
+		if(getArguments().containsKey("redraftStatus")){
+			redraftStatus=Parcels.unwrap(getArguments().getParcelable("redraftStatus"));
+		}
+		if(editingStatus!=null && redraftStatus!=null)
+			throw new IllegalStateException("editStatus and redraftStatus are mutually exclusive");
+		sourceStatus=editingStatus!=null ? editingStatus : redraftStatus;
 		if(instance==null){
 			Nav.finish(this);
 			return;
@@ -241,7 +253,12 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		if(getArguments().containsKey("quote"))
 			quotedStatus=Parcels.unwrap(getArguments().getParcelable("quote"));
 
+		if(getArguments().containsKey("replyTo"))
+			replyTo=Parcels.unwrap(getArguments().getParcelable("replyTo"));
 		replyToId=getArguments().getString("replyToId");
+
+		if(savedInstanceState==null && sourceStatus!=null && sourceStatus.language!=null)
+			postLang=new ComposeLanguageAlertViewController.SelectedOption(-1, Locale.forLanguageTag(sourceStatus.language), null);
 	}
 
 	@Override
@@ -380,17 +397,22 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 			hasSpoiler=true;
 			spoilerWrap.setVisibility(View.VISIBLE);
 			spoilerBtn.setSelected(true);
-		}else if(editingStatus!=null && !TextUtils.isEmpty(editingStatus.spoilerText)){
+		}else if(sourceStatus!=null && !TextUtils.isEmpty(sourceStatus.spoilerText)){
 			hasSpoiler=true;
 			spoilerWrap.setVisibility(View.VISIBLE);
-			spoilerEdit.setText(getArguments().getString("sourceSpoiler", editingStatus.spoilerText));
+			spoilerEdit.setText(getArguments().getString("sourceSpoiler", sourceStatus.spoilerText));
+			spoilerBtn.setSelected(true);
+		}else if(redraftStatus!=null && redraftStatus.sensitive){
+			// An empty content warning is what the composer uses to mean "sensitive without a warning".
+			hasSpoiler=true;
+			spoilerWrap.setVisibility(View.VISIBLE);
 			spoilerBtn.setSelected(true);
 		}
 
-		if(editingStatus!=null && editingStatus.visibility!=null){
-			statusVisibility=editingStatus.visibility;
-			if(editingStatus.quoteApproval!=null){
-				statusQuotePolicy=editingStatus.quoteApproval.toQuotePolicy();
+		if(sourceStatus!=null && sourceStatus.visibility!=null){
+			statusVisibility=sourceStatus.visibility;
+			if(sourceStatus.quoteApproval!=null){
+				statusQuotePolicy=sourceStatus.quoteApproval.toQuotePolicy();
 			}
 		}
 		updateVisibilityButton(false);
@@ -486,7 +508,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		super.onViewCreated(view, savedInstanceState);
 		rootView=(FragmentRootLinearLayout) view;
 		rootView.setClipToPadding(false);
-		if(editingStatus==null)
+		if(sourceStatus==null)
 			loadDefaultStatusVisibility(savedInstanceState);
 		loadContentType(savedInstanceState);
 		contentView.setSizeListener(emojiKeyboard::onContentViewSizeChanged);
@@ -635,13 +657,14 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 		}
 
 		if(savedInstanceState==null){
-			if(editingStatus!=null){
+			if(sourceStatus!=null){
 				initialText=getArguments().getString("sourceText", "");
 				mainEditText.setText(initialText);
 				ignoreSelectionChanges=true;
 				mainEditText.setSelection(mainEditText.length());
 				ignoreSelectionChanges=false;
-				mediaViewController.onViewCreated(savedInstanceState);
+				if(editingStatus!=null)
+					mediaViewController.onViewCreated(savedInstanceState);
 			}else{
 				String prefilledText=getArguments().getString("prefilledText");
 				if(!TextUtils.isEmpty(prefilledText)){
@@ -660,8 +683,9 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 			}
 		}
 
-		if(editingStatus!=null){
+		if(sourceStatus!=null)
 			updateCharCounter();
+		if(editingStatus!=null){
 			visibilityBtn.setEnabled(false);
 			visibilityBtn.setAlpha(0.5f);
 		}
@@ -944,6 +968,10 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	}
 
 	private boolean hasDraft(){
+		// A redraft holds the whole content of a post that is already deleted, so leaving it always
+		// discards something.
+		if(redraftStatus!=null)
+			return true;
 		if(editingStatus!=null){
 			if(!mainEditText.getText().toString().equals(initialText))
 				return true;
@@ -1198,8 +1226,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	}
 
 	private void loadDefaultStatusVisibility(Bundle savedInstanceState){
-		if(getArguments().containsKey("replyTo")){
-			replyTo=Parcels.unwrap(getArguments().getParcelable("replyTo"));
+		if(replyTo!=null){
 			statusVisibility=replyTo.visibility;
 		}
 
