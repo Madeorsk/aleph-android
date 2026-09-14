@@ -14,6 +14,7 @@ Aleph tracks the upstream app and adds:
 - Post content type selection (plain text, Markdown, HTML) in the compose screen, with a per-account default, when the server advertises support for it ([glitch-soc](https://github.com/glitch-soc/mastodon)).
 - A bookmark button in the post actions, with boost, favorite and bookmark each taking their own color when active.
 - Delete and redraft in the post menu, deleting a post and reopening its text, content warning, media, poll and quote in the compose screen, ready to be posted again.
+- The content warning of a post is carried over when replying to it, whoever wrote it, like the web app does.
 
 Everything else behaves like the official app.
 

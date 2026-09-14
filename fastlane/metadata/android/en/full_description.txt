@@ -6,6 +6,7 @@ WHAT ALEPH ADDS
 ■ Post content types: choose plain text, Markdown or HTML when composing, with a per-account default, on servers that support it
 ■ Bookmark button: bookmark a post right from its action buttons, with boost, favourite and bookmark each coloured when active
 ■ Delete and redraft: delete a post and reopen its text, content warning, media and poll in the composer, ready to be posted again
+■ Reply content warnings: replying to a post carries over its content warning, whoever wrote it, like the web app
 
 ⚠️ Some Aleph features are written with the help of generative AI (under human review).
 
