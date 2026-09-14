@@ -10,6 +10,8 @@
 	<string name="content_type_html_subtitle">Advanced HTML formatting</string>
 	<string name="default_post_content_type">Posting content type</string>
 	<string name="delete_and_redraft">Delete and redraft</string>
+	<string name="confirm_delete_and_redraft_title">Delete and redraft post</string>
+	<string name="confirm_delete_and_redraft">This post will be deleted right away, losing its favorites, boosts and replies, and its content will open in a new draft.</string>
 	<string name="push_notifications">Notifications</string>
 	<string name="push_transport_automatic">Automatic</string>
 	<string name="push_transport_automatic_subtitle">Use an installed UnifiedPush distributor, or Google when there is none</string>

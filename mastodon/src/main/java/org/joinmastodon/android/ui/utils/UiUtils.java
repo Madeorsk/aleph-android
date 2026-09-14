@@ -665,6 +665,7 @@ public class UiUtils{
 	/**
 	 * Deletes a post and opens the composer prefilled with its content, so it can be posted again.
 	 * The post is gone as soon as this succeeds, whether or not the new one is ever published.
+	 * Asks for confirmation first unless {@link GlobalUserPreferences#confirmDeletePost} is off.
 	 * @param parentStatus the post this one replies to, when it is already loaded, or null. The
 	 * reply is kept either way, this only drives the reply preview in the composer.
 	 */
@@ -696,7 +697,7 @@ public class UiUtils{
 				.wrapProgress(activity, R.string.deleting, false)
 				.exec(accountID);
 
-		new GetStatusSourceText(status.id)
+		Runnable redraft=()->new GetStatusSourceText(status.id)
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(GetStatusSourceText.Response result){
@@ -713,6 +714,11 @@ public class UiUtils{
 				})
 				.wrapProgress(activity, R.string.loading, true)
 				.exec(accountID);
+
+		if(GlobalUserPreferences.confirmDeletePost)
+			showConfirmationAlert(activity, R.string.confirm_delete_and_redraft_title, R.string.confirm_delete_and_redraft, R.string.delete_and_redraft, redraft);
+		else
+			redraft.run();
 	}
 
 	public static void setRelationshipToActionButton(Relationship relationship, Account account, Button button, boolean compact){
