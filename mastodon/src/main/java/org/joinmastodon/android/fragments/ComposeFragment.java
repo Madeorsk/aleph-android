@@ -397,22 +397,26 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 			hasSpoiler=true;
 			spoilerWrap.setVisibility(View.VISIBLE);
 			spoilerBtn.setSelected(true);
-		}else if(sourceStatus!=null && !TextUtils.isEmpty(sourceStatus.spoilerText)){
+		}else if(savedInstanceState==null && sourceStatus!=null && !TextUtils.isEmpty(sourceStatus.spoilerText)){
 			hasSpoiler=true;
 			spoilerWrap.setVisibility(View.VISIBLE);
 			spoilerEdit.setText(getArguments().getString("sourceSpoiler", sourceStatus.spoilerText));
 			spoilerBtn.setSelected(true);
-		}else if(redraftStatus!=null && redraftStatus.sensitive){
+		}else if(savedInstanceState==null && redraftStatus!=null && redraftStatus.sensitive){
 			// An empty content warning is what the composer uses to mean "sensitive without a warning".
 			hasSpoiler=true;
 			spoilerWrap.setVisibility(View.VISIBLE);
 			spoilerBtn.setSelected(true);
 		}
 
-		if(sourceStatus!=null && sourceStatus.visibility!=null){
-			statusVisibility=sourceStatus.visibility;
-			if(sourceStatus.quoteApproval!=null){
-				statusQuotePolicy=sourceStatus.quoteApproval.toQuotePolicy();
+		if(sourceStatus!=null){
+			if(savedInstanceState!=null){
+				statusVisibility=(StatusPrivacy) savedInstanceState.getSerializable("visibility");
+			}else if(sourceStatus.visibility!=null){
+				statusVisibility=sourceStatus.visibility;
+				if(sourceStatus.quoteApproval!=null){
+					statusQuotePolicy=sourceStatus.quoteApproval.toQuotePolicy();
+				}
 			}
 		}
 		updateVisibilityButton(false);
