@@ -123,16 +123,16 @@ public class ComposePollViewController{
 			updatePollOptionHints();
 			pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), pollDuration));
 			pollStyleValue.setText(pollIsMultipleChoice ? R.string.compose_poll_multiple_choice : R.string.compose_poll_single_choice);
-		}else if(savedInstanceState==null && fragment.editingStatus!=null && fragment.editingStatus.poll!=null){
+		}else if(savedInstanceState==null && fragment.sourceStatus!=null && fragment.sourceStatus.poll!=null){
 			pollWrap.setVisibility(View.VISIBLE);
-			for(Poll.Option eopt:fragment.editingStatus.poll.options){
+			for(Poll.Option eopt:fragment.sourceStatus.poll.options){
 				DraftPollOption opt=createDraftPollOption(false);
 				opt.edit.setText(eopt.title);
 			}
-			pollDuration=(int)fragment.editingStatus.poll.expiresAt.minus(fragment.editingStatus.createdAt.toEpochMilli(), ChronoUnit.MILLIS).getEpochSecond();
+			pollDuration=(int)fragment.sourceStatus.poll.expiresAt.minus(fragment.sourceStatus.createdAt.toEpochMilli(), ChronoUnit.MILLIS).getEpochSecond();
 			updatePollOptionHints();
 			pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), pollDuration));
-			pollIsMultipleChoice=fragment.editingStatus.poll.multiple;
+			pollIsMultipleChoice=fragment.sourceStatus.poll.multiple;
 			pollStyleValue.setText(pollIsMultipleChoice ? R.string.compose_poll_multiple_choice : R.string.compose_poll_single_choice);
 		}else{
 			pollDurationValue.setText(UiUtils.formatDuration(fragment.getContext(), 24*3600));

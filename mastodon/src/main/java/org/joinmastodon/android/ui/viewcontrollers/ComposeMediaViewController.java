@@ -111,9 +111,9 @@ public class ComposeMediaViewController{
 	}
 
 	public void onViewCreated(Bundle savedInstanceState){
-		if(savedInstanceState==null && !fragment.editingStatus.mediaAttachments.isEmpty()){
+		if(savedInstanceState==null && !fragment.sourceStatus.mediaAttachments.isEmpty()){
 			attachmentsScroller.setVisibility(View.VISIBLE);
-			for(Attachment att:fragment.editingStatus.mediaAttachments){
+			for(Attachment att:fragment.sourceStatus.mediaAttachments){
 				DraftMediaAttachment da=new DraftMediaAttachment();
 				da.serverAttachment=att;
 				da.description=att.description;

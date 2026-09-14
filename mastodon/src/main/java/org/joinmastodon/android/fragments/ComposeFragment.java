@@ -663,8 +663,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 				ignoreSelectionChanges=true;
 				mainEditText.setSelection(mainEditText.length());
 				ignoreSelectionChanges=false;
-				if(editingStatus!=null)
-					mediaViewController.onViewCreated(savedInstanceState);
+				mediaViewController.onViewCreated(savedInstanceState);
 			}else{
 				String prefilledText=getArguments().getString("prefilledText");
 				if(!TextUtils.isEmpty(prefilledText)){
