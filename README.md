@@ -13,6 +13,7 @@ Aleph tracks the upstream app and adds:
 - UnifiedPush support, so push notifications work without Google Play Services.
 - Post content type selection (plain text, Markdown, HTML) in the compose screen, with a per-account default, when the server advertises support for it ([glitch-soc](https://github.com/glitch-soc/mastodon)).
 - A bookmark button in the post actions, with boost, favorite and bookmark each taking their own color when active.
+- Delete and redraft in the post menu, deleting a post and reopening its text, content warning, media, poll and quote in the compose screen, ready to be posted again.
 
 Everything else behaves like the official app.
 
