@@ -968,8 +968,7 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 	}
 
 	private boolean hasDraft(){
-		// A redraft holds the whole content of a post that is already deleted, so leaving it always
-		// discards something.
+		// The redrafted post is already deleted, so leaving always loses something.
 		if(redraftStatus!=null)
 			return true;
 		if(editingStatus!=null){
