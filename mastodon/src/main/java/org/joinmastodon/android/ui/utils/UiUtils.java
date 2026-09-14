@@ -639,14 +639,18 @@ public class UiUtils{
 		}
 	}
 
-	public static void confirmDeletePost(Activity activity, String accountID, Status status, Consumer<Status> resultCallback){
-		Runnable delete=()->new DeleteStatus(status.id)
+	/**
+	 * Deletes a post, purging it from the cache and from the screens showing it.
+	 * @param resultCallback called with the deleted post as the server returned it, which still carries everything needed to post it again.
+	 */
+	public static void deletePost(Activity activity, String accountID, Status status, Consumer<Status> resultCallback){
+		new DeleteStatus(status.id)
 				.setCallback(new Callback<>(){
 					@Override
 					public void onSuccess(Status result){
-						resultCallback.accept(result);
 						AccountSessionManager.getInstance().getAccount(accountID).getCacheController().deleteStatus(status.id);
 						E.post(new StatusDeletedEvent(status.id, accountID));
+						resultCallback.accept(result);
 					}
 
 					@Override
@@ -656,6 +660,10 @@ public class UiUtils{
 				})
 				.wrapProgress(activity, R.string.deleting, false)
 				.exec(accountID);
+	}
+
+	public static void confirmDeletePost(Activity activity, String accountID, Status status, Consumer<Status> resultCallback){
+		Runnable delete=()->deletePost(activity, accountID, status, resultCallback);
 		if(GlobalUserPreferences.confirmDeletePost)
 			showConfirmationAlert(activity, R.string.confirm_delete_title, R.string.confirm_delete, R.string.delete, delete);
 		else
@@ -680,22 +688,7 @@ public class UiUtils{
 		if(status.quote!=null && status.quote.quotedStatus!=null)
 			args.putParcelable("quote", Parcels.wrap(status.quote.quotedStatus));
 
-		Runnable deleteAndCompose=()->new DeleteStatus(status.id)
-				.setCallback(new Callback<>(){
-					@Override
-					public void onSuccess(Status result){
-						AccountSessionManager.getInstance().getAccount(accountID).getCacheController().deleteStatus(status.id);
-						E.post(new StatusDeletedEvent(status.id, accountID));
-						Nav.go(activity, ComposeFragment.class, args);
-					}
-
-					@Override
-					public void onError(ErrorResponse error){
-						error.showToast(activity);
-					}
-				})
-				.wrapProgress(activity, R.string.deleting, false)
-				.exec(accountID);
+		Runnable deleteAndCompose=()->deletePost(activity, accountID, status, deleted->Nav.go(activity, ComposeFragment.class, args));
 
 		Runnable redraft=()->new GetStatusSourceText(status.id)
 				.setCallback(new Callback<>(){
