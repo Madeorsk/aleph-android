@@ -157,29 +157,27 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 					final Bundle args=new Bundle();
 					args.putString("account", item.accountID);
 					args.putParcelable("editStatus", Parcels.wrap(item.status));
-					if(TextUtils.isEmpty(item.status.content) && TextUtils.isEmpty(item.status.spoilerText)){
-						Nav.go((Activity) item.context, ComposeFragment.class, args);
-					}else{
-						new GetStatusSourceText(item.status.id)
-								.setCallback(new Callback<>(){
-									@Override
-									public void onSuccess(GetStatusSourceText.Response result){
-										args.putString("sourceText", result.text);
-										args.putString("sourceSpoiler", result.spoilerText);
-										args.putSerializable("sourceContentType", result.contentType);
-										Nav.go((Activity) item.context, ComposeFragment.class, args);
-									}
+					new GetStatusSourceText(item.status.id)
+							.setCallback(new Callback<>(){
+								@Override
+								public void onSuccess(GetStatusSourceText.Response result){
+									args.putString("sourceText", result.text);
+									args.putString("sourceSpoiler", result.spoilerText);
+									args.putSerializable("sourceContentType", result.contentType);
+									Nav.go((Activity) item.context, ComposeFragment.class, args);
+								}
 
-									@Override
-									public void onError(ErrorResponse error){
-										error.showToast(item.context);
-									}
-								})
-								.wrapProgress((Activity) item.context, R.string.loading, true)
-								.exec(item.accountID);
-					}
+								@Override
+								public void onError(ErrorResponse error){
+									error.showToast(item.context);
+								}
+							})
+							.wrapProgress((Activity) item.context, R.string.loading, true)
+							.exec(item.accountID);
 				}else if(id==R.id.delete){
 					UiUtils.confirmDeletePost((Activity) item.context, item.accountID, item.status, s->{});
+				}else if(id==R.id.redraft){
+					UiUtils.redraftPost((Activity) item.context, item.accountID, item.status, item.callbacks.getStatusByID(item.status.inReplyToId));
 				}else if(id==R.id.mute){
 					UiUtils.confirmToggleMuteUser((Activity) item.context, item.accountID, account, relationship!=null && relationship.muting, r->{});
 				}else if(id==R.id.block){
@@ -385,6 +383,7 @@ public class HeaderStatusDisplayItem extends StatusDisplayItem{
 			}
 			menu.findItem(R.id.edit).setVisible(item.status!=null && isOwnPost);
 			menu.findItem(R.id.delete).setVisible(item.status!=null && isOwnPost);
+			menu.findItem(R.id.redraft).setVisible(item.status!=null && isOwnPost);
 			menu.findItem(R.id.change_quote_policy).setVisible(item.status!=null && isOwnPost && item.status.quoteApproval!=null && (item.status.visibility==StatusPrivacy.PUBLIC || item.status.visibility==StatusPrivacy.UNLISTED));
 			menu.findItem(R.id.open_in_browser).setVisible(item.status!=null);
 			MenuItem mute=menu.findItem(R.id.mute);

@@ -156,12 +156,22 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status>{
 		}
 	}
 
+	/**
+	 * Called when a post shown by this screen was deleted, on this device or elsewhere.
+	 */
+	protected void onStatusDeleted(Status status){
+		removeStatus(status);
+	}
+
 	protected Status getContentStatusByID(String id){
 		Status s=getStatusByID(id);
 		return s==null ? null : s.getContentStatus();
 	}
 
-	protected Status getStatusByID(String id){
+	@Override
+	public Status getStatusByID(String id){
+		if(id==null)
+			return null;
 		for(Status s:data){
 			if(s.id.equals(id)){
 				return s;
@@ -240,7 +250,7 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status>{
 			Status status=getStatusByID(ev.id);
 			if(status==null)
 				return;
-			removeStatus(status);
+			StatusListFragment.this.onStatusDeleted(status);
 		}
 
 		@Subscribe
