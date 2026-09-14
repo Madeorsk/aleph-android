@@ -380,6 +380,10 @@ public abstract class StatusDisplayItem{
 		void onRevealSpoilerClick(SpoilerStatusDisplayItem.Holder holder);
 		void onGapClick(GapStatusDisplayItem.Holder item);
 		Relationship getRelationship(String id);
+		/**
+		 * @return The post with this id if the screen has it loaded, null otherwise.
+		 */
+		Status getStatusByID(String id);
 		void putRelationship(String id, Relationship rel);
 		void togglePostTranslation(Status status, String itemID);
 		void maybeShowPreReplySheet(Status status, Runnable proceed);
@@ -445,6 +449,11 @@ public abstract class StatusDisplayItem{
 
 		@Override
 		public Relationship getRelationship(String id){
+			return null;
+		}
+
+		@Override
+		public Status getStatusByID(String id){
 			return null;
 		}
 

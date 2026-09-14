@@ -75,6 +75,7 @@ import org.joinmastodon.android.api.requests.accounts.SetDomainBlocked;
 import org.joinmastodon.android.api.requests.search.GetSearchResults;
 import org.joinmastodon.android.api.requests.statuses.DeleteStatus;
 import org.joinmastodon.android.api.requests.statuses.GetStatusByID;
+import org.joinmastodon.android.api.requests.statuses.GetStatusSourceText;
 import org.joinmastodon.android.api.session.AccountSessionManager;
 import org.joinmastodon.android.events.RemoveAccountPostsEvent;
 import org.joinmastodon.android.events.StatusDeletedEvent;
@@ -659,6 +660,59 @@ public class UiUtils{
 			showConfirmationAlert(activity, R.string.confirm_delete_title, R.string.confirm_delete, R.string.delete, delete);
 		else
 			delete.run();
+	}
+
+	/**
+	 * Deletes a post and opens the composer prefilled with its content, so it can be posted again.
+	 * The post is gone as soon as this succeeds, whether or not the new one is ever published.
+	 * @param parentStatus the post this one replies to, when it is already loaded, or null. The
+	 * reply is kept either way, this only drives the reply preview in the composer.
+	 */
+	public static void redraftPost(Activity activity, String accountID, Status status, Status parentStatus){
+		Bundle args=new Bundle();
+		args.putString("account", accountID);
+		args.putParcelable("redraftStatus", Parcels.wrap(status));
+		if(status.inReplyToId!=null)
+			args.putString("replyToId", status.inReplyToId);
+		if(parentStatus!=null)
+			args.putParcelable("replyTo", Parcels.wrap(parentStatus));
+		if(status.quote!=null && status.quote.quotedStatus!=null)
+			args.putParcelable("quote", Parcels.wrap(status.quote.quotedStatus));
+
+		Runnable deleteAndCompose=()->new DeleteStatus(status.id)
+				.setCallback(new Callback<>(){
+					@Override
+					public void onSuccess(Status result){
+						AccountSessionManager.getInstance().getAccount(accountID).getCacheController().deleteStatus(status.id);
+						E.post(new StatusDeletedEvent(status.id, accountID));
+						Nav.go(activity, ComposeFragment.class, args);
+					}
+
+					@Override
+					public void onError(ErrorResponse error){
+						error.showToast(activity);
+					}
+				})
+				.wrapProgress(activity, R.string.deleting, false)
+				.exec(accountID);
+
+		new GetStatusSourceText(status.id)
+				.setCallback(new Callback<>(){
+					@Override
+					public void onSuccess(GetStatusSourceText.Response result){
+						args.putString("sourceText", result.text);
+						args.putString("sourceSpoiler", result.spoilerText);
+						args.putSerializable("sourceContentType", result.contentType);
+						deleteAndCompose.run();
+					}
+
+					@Override
+					public void onError(ErrorResponse error){
+						error.showToast(activity);
+					}
+				})
+				.wrapProgress(activity, R.string.loading, true)
+				.exec(accountID);
 	}
 
 	public static void setRelationshipToActionButton(Relationship relationship, Account account, Button button, boolean compact){

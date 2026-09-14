@@ -362,6 +362,15 @@ public class ThreadFragment extends StatusListFragment implements AssistContentP
 	}
 
 	@Override
+	protected void onStatusDeleted(Status status){
+		// Without its main post there is no thread left to show, and reloading it would only 404.
+		if(status.id.equals(mainStatus.id))
+			Nav.finish(this);
+		else
+			super.onStatusDeleted(status);
+	}
+
+	@Override
 	public boolean isItemEnabled(StatusDisplayItem item){
 		return item.isQuote || !item.parentID.equals(mainStatus.id);
 	}

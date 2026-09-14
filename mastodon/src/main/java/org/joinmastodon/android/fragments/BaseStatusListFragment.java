@@ -706,6 +706,11 @@ public abstract class BaseStatusListFragment<T extends DisplayItemsParent> exten
 		return relationships.get(id);
 	}
 
+	@Override
+	public Status getStatusByID(String id){
+		return null;
+	}
+
 	public void putRelationship(String id, Relationship rel){
 		relationships.put(id, rel);
 	}

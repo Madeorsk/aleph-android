@@ -619,7 +619,8 @@ public class ComposeFragment extends MastodonToolbarFragment implements ComposeE
 					mentions.add(m);
 			}
 			initialText=mentions.isEmpty() ? "" : TextUtils.join(" ", mentions)+" ";
-			if(savedInstanceState==null){
+			// A post prefilled from an existing one already carries its own text and content warning.
+			if(savedInstanceState==null && sourceStatus==null){
 				mainEditText.setText(initialText);
 				ignoreSelectionChanges=true;
 				mainEditText.setSelection(mainEditText.length());
