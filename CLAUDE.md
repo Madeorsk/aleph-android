@@ -20,8 +20,6 @@ JDK 17+ required (Java 17 language features). Single Gradle module: `:mastodon`.
 
 Build types: `debug`, `release`, `githubDebug`/`githubRelease` (source root switched to `src/github`, adds the in-app self-updater), `screenshotsUiTest` (non-debuggable debug used as `testBuildType`; select it in the Build Variants panel if Android Studio says "module not specified").
 
-Fastlane lanes `test`, `beta`, `deploy` drive CI; releases and Play uploads happen there, not locally.
-
 ## Versioning
 
 `versionName` is `<upstream version>+aleph-<aleph version>` (e.g. `2.13.3+aleph-1.0.0`): the upstream release the fork is rebased on, then Aleph's own semver. Bump the upstream part when merging upstream, the Aleph part for Aleph-only releases.
