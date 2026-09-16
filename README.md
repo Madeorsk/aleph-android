@@ -24,10 +24,42 @@ Get the APK from the [Releases section](https://github.com/Madeorsk/mastodon-and
 
 ## Building
 
-As this app is using Java 17 features, you need JDK 17 or newer to build it. Other than that, everything is pretty standard. You can either import the project into Android Studio and build it from there, or run the following command in the project directory:
+You can either import the project into Android Studio and build it from there, or run the following command in the project directory:
 
 ```shell
 ./gradlew assembleRelease
+```
+
+### Toolchain
+
+Releases are built with an exact toolchain, so that the `release` APK can be reproduced from source:
+
+| Component               | Version                         |
+|-------------------------|---------------------------------|
+| JDK                     | 21 (Temurin)                    |
+| Gradle                  | 8.13 (wrapper, checksum-pinned) |
+| Android Gradle Plugin   | 8.13.2                          |
+| Android SDK platform    | 37 (`compileSdk`)               |
+| Android SDK build-tools | 35.0.0                          |
+| NDK                     | not used                        |
+
+The build reads no other environment than the signing variables below, and `local.properties` only needs `sdk.dir`.
+
+### Signing
+
+Release builds are signed only when the keystore is passed through the environment. Without these variables, `assembleRelease` and `assembleGithubRelease` produce unsigned APKs.
+
+| Variable            | Meaning                                   |
+|---------------------|-------------------------------------------|
+| `KEYSTORE_FILE`     | Path to the keystore file                 |
+| `KEYSTORE_PASSWORD` | Store password, also used as key password |
+| `KEY_ALIAS`         | Key alias, defaults to `key0`             |
+
+Creating a release keystore:
+
+```shell
+keytool -genkeypair -v -keystore aleph-release.jks -alias key0 \
+	-keyalg RSA -keysize 4096 -validity 10000
 ```
 
 ## Contributing
