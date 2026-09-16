@@ -18,7 +18,7 @@ JDK 17+ required (Java 17 language features). Single Gradle module: `:mastodon`.
 
 `local.properties` must contain `sdk.dir`. Unit tests run with `unitTests.returnDefaultValues=true`, so Android framework calls return defaults rather than throwing.
 
-Build types: `debug`, `release`, `beta` (release + `-beta` suffix), `githubDebug`/`githubRelease` (source root switched to `src/github`, adds the in-app self-updater), `screenshotsUiTest` (non-debuggable debug used as `testBuildType`; select it in the Build Variants panel if Android Studio says "module not specified").
+Build types: `debug`, `release`, `githubDebug`/`githubRelease` (source root switched to `src/github`, adds the in-app self-updater), `screenshotsUiTest` (non-debuggable debug used as `testBuildType`; select it in the Build Variants panel if Android Studio says "module not specified").
 
 Fastlane lanes `test`, `beta`, `deploy` drive CI; releases and Play uploads happen there, not locally.
 

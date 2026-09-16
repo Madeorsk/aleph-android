@@ -45,10 +45,6 @@ android {
 		debug{
 			debuggable true
 		}
-		beta{
-			initWith release
-			versionNameSuffix "-beta"
-		}
 		githubRelease{
 			initWith release
 			if(hasSigningEnv)
