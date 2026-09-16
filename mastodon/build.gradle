@@ -18,11 +18,29 @@ android {
 		testBuildType "screenshotsUiTest"
 	}
 
+	// Release builds are signed only when the keystore is provided through the environment, so local builds need no secrets.
+	def keystoreFile=System.getenv("KEYSTORE_FILE")
+	def keystorePassword=System.getenv("KEYSTORE_PASSWORD")
+	def hasSigningEnv=keystoreFile!=null && !keystoreFile.isEmpty() && keystorePassword!=null && !keystorePassword.isEmpty()
+
+	if(hasSigningEnv){
+		signingConfigs{
+			release{
+				keyAlias System.getenv("KEY_ALIAS") ?: "key0"
+				keyPassword keystorePassword
+				storeFile file(keystoreFile)
+				storePassword keystorePassword
+			}
+		}
+	}
+
 	buildTypes {
 		release {
 			minifyEnabled true
 			shrinkResources true
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+			if(hasSigningEnv)
+				signingConfig signingConfigs.release
 		}
 		debug{
 			debuggable true
@@ -33,6 +51,8 @@ android {
 		}
 		githubRelease{
 			initWith release
+			if(hasSigningEnv)
+				signingConfig signingConfigs.release
 		}
 		githubDebug{
 			initWith debug
