@@ -40,16 +40,18 @@ android {
 			minifyEnabled true
 			shrinkResources true
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-			if(hasSigningEnv)
+			if(hasSigningEnv){
 				signingConfig signingConfigs.release
+			}
 		}
 		debug{
 			debuggable true
 		}
 		githubRelease{
 			initWith release
-			if(hasSigningEnv)
+			if(hasSigningEnv){
 				signingConfig signingConfigs.release
+			}
 		}
 		githubDebug{
 			initWith debug
