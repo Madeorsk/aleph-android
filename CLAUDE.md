@@ -6,7 +6,7 @@ This is **Aleph** (`com.madeorsk.aleph`), a fork of the official Mastodon Androi
 
 ## Build & test
 
-JDK 17+ required (Java 17 language features). Single Gradle module: `:mastodon`.
+JDK 21 (Temurin), Gradle 8.13, AGP 8.13.2, SDK platform 37, build-tools 35.0.0: the toolchain is pinned for reproducible releases and documented in `README.md`. Java 17 language level. Single Gradle module: `:mastodon`.
 
 ```shell
 ./gradlew assembleDebug                 # debug APK
@@ -18,9 +18,7 @@ JDK 17+ required (Java 17 language features). Single Gradle module: `:mastodon`.
 
 `local.properties` must contain `sdk.dir`. Unit tests run with `unitTests.returnDefaultValues=true`, so Android framework calls return defaults rather than throwing.
 
-Build types: `debug`, `release`, `beta` (release + `-beta` suffix), `githubDebug`/`githubRelease` (source root switched to `src/github`, adds the in-app self-updater), `screenshotsUiTest` (non-debuggable debug used as `testBuildType`; select it in the Build Variants panel if Android Studio says "module not specified").
-
-Fastlane lanes `test`, `beta`, `deploy` drive CI; releases and Play uploads happen there, not locally.
+Build types: `debug`, `release`, `githubDebug`/`githubRelease` (source root switched to `src/github`, adds the in-app self-updater), `screenshotsUiTest` (non-debuggable debug used as `testBuildType`; select it in the Build Variants panel if Android Studio says "module not specified").
 
 ## Versioning
 

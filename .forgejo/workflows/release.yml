@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: docker
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: gradle
+
+      - name: Cache the Android SDK
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/sdk
+          key: android-sdk-37.0-35.0.0
+
+      - name: Set up Android SDK
+        uses: https://github.com/android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-37.0 build-tools;35.0.0'
+
+      - name: Read version and check the tag
+        id: version
+        run: |
+          set -eu
+          VERSION_CODE=$(grep -oP 'versionCode\s+\K\d+' mastodon/build.gradle)
+          VERSION_NAME=$(grep -oP 'versionName\s+"\K[^"]+' mastodon/build.gradle)
+          TAG="$GITHUB_REF_NAME"
+          if [ "$TAG" != "v$VERSION_NAME" ]; then
+            echo "! Tag $TAG does not match the build version name $VERSION_NAME (expected v$VERSION_NAME)."
+            exit 1
+          fi
+          CHANGELOG="fastlane/metadata/android/en-US/changelogs/$VERSION_CODE.txt"
+          if [ ! -f "$CHANGELOG" ]; then
+            echo "! Missing changelog $CHANGELOG."
+            exit 1
+          fi
+          echo "version-code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "version-name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
+
+      - name: Decode the keystore
+        run: |
+          set -eu
+          echo '${{ secrets.KEYSTORE_FILE }}' | base64 -d > "${RUNNER_TEMP:-/tmp}/aleph-release.jks"
+
+      - name: Build the release APKs
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          set -eu
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          KEYSTORE_FILE="${RUNNER_TEMP:-/tmp}/aleph-release.jks" ./gradlew assembleRelease assembleGithubRelease
+
+      - name: Collect the release assets
+        env:
+          VERSION_CODE: ${{ steps.version.outputs.version-code }}
+          VERSION_NAME: ${{ steps.version.outputs.version-name }}
+        run: |
+          set -eu
+          mkdir -p dist/release
+          cp mastodon/build/outputs/apk/release/*.apk "dist/release/aleph-release-$VERSION_NAME.apk"
+          cp mastodon/build/outputs/apk/githubRelease/*.apk "dist/release/aleph-$VERSION_NAME.apk"
+          cp mastodon/build/outputs/mapping/release/mapping.txt dist/release/mapping-release.txt
+          cp mastodon/build/outputs/mapping/githubRelease/mapping.txt dist/release/mapping-githubRelease.txt
+          printf '{"versionCode":%s,"versionName":"%s"}\n' "$VERSION_CODE" "$VERSION_NAME" > dist/release/version.json
+
+      - name: Ensure jq is available
+        run: command -v jq >/dev/null || (apt-get update && apt-get install -y --no-install-recommends jq)
+
+      - name: Publish the release
+        uses: https://code.forgejo.org/actions/forgejo-release@v2.13.4
+        with:
+          direction: upload
+          release-dir: dist/release
+          release-notes-file: ${{ steps.version.outputs.changelog }}
+
+      - name: Check the download URL of the reproducible APK
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.version-name }}
+        run: |
+          set -eu
+          URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/aleph-release-$VERSION_NAME.apk"
+          echo "Checking $URL"
+          curl -fsSL -o /dev/null -H "Authorization: token ${{ github.token }}" "$URL"
