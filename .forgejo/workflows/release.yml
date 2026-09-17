@@ -53,9 +53,21 @@ jobs:
           echo "changelog=$CHANGELOG" >> "$GITHUB_OUTPUT"
 
       - name: Decode the keystore
+        env:
+          KEYSTORE_FILE_BASE64: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           set -eu
-          echo '${{ secrets.KEYSTORE_FILE }}' | base64 -d > "${RUNNER_TEMP:-/tmp}/aleph-release.jks"
+          if [ -z "$KEYSTORE_FILE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "! KEYSTORE_FILE and KEYSTORE_PASSWORD must both be set, or the release would be unsigned."
+            exit 1
+          fi
+          KEYSTORE="${RUNNER_TEMP:-/tmp}/aleph-release.jks"
+          printf '%s' "$KEYSTORE_FILE_BASE64" | base64 -d > "$KEYSTORE"
+          if [ ! -s "$KEYSTORE" ]; then
+            echo "! Decoded keystore is empty."
+            exit 1
+          fi
 
       - name: Build the release APKs
         env:
@@ -72,11 +84,20 @@ jobs:
         run: |
           set -eu
           mkdir -p dist/release
-          cp mastodon/build/outputs/apk/release/*.apk "dist/release/aleph-release-$VERSION_NAME.apk"
-          cp mastodon/build/outputs/apk/githubRelease/*.apk "dist/release/aleph-$VERSION_NAME.apk"
+          cp mastodon/build/outputs/apk/release/mastodon-release.apk "dist/release/aleph-release-$VERSION_NAME.apk"
+          cp mastodon/build/outputs/apk/githubRelease/mastodon-githubRelease.apk "dist/release/aleph-$VERSION_NAME.apk"
           cp mastodon/build/outputs/mapping/release/mapping.txt dist/release/mapping-release.txt
           cp mastodon/build/outputs/mapping/githubRelease/mapping.txt dist/release/mapping-githubRelease.txt
           printf '{"versionCode":%s,"versionName":"%s"}\n' "$VERSION_CODE" "$VERSION_NAME" > dist/release/version.json
+
+      - name: Check the APK signatures
+        run: |
+          set -eu
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner"
+          for apk in dist/release/*.apk; do
+            echo "Verifying $apk"
+            "$APKSIGNER" verify --print-certs "$apk"
+          done
 
       - name: Ensure jq is available
         run: command -v jq >/dev/null || (apt-get update && apt-get install -y --no-install-recommends jq)
