@@ -26,8 +26,7 @@ import org.joinmastodon.android.api.MastodonAPIController;
 import org.joinmastodon.android.events.SelfUpdateStateChangedEvent;
 
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.IOException;
 
 import androidx.annotation.Keep;
 import okhttp3.Call;
@@ -38,6 +37,9 @@ import okhttp3.Response;
 public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 	private static final long CHECK_PERIOD=24*3600*1000L;
 	private static final String TAG="GithubSelfUpdater";
+	private static final String LATEST_RELEASE_URL="https://code.zeptotech.net/api/v1/repos/Aleph/mastodon-android/releases/latest";
+	private static final String VERSION_ASSET="version.json";
+	private static final String APK_ASSET_PREFIX="aleph-";
 
 	private UpdateState state=UpdateState.NO_UPDATE;
 	private UpdateInfo info;
@@ -102,54 +104,37 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 	}
 
 	private void actuallyCheckForUpdates(){
-		Request req=new Request.Builder()
-				.url("https://api.github.com/repos/mastodon/mastodon-android/releases/latest")
-				.build();
-		Call call=MastodonAPIController.getHttpClient().newCall(req);
-		try(Response resp=call.execute()){
-			JsonObject obj=JsonParser.parseReader(resp.body().charStream()).getAsJsonObject();
-			String tag=obj.get("tag_name").getAsString();
-			Pattern pattern=Pattern.compile("v?(\\d+)\\.(\\d+)(?:\\.(\\d+))?");
-			Matcher matcher=pattern.matcher(tag);
-			if(!matcher.find()){
-				Log.w(TAG, "actuallyCheckForUpdates: release tag has wrong format: "+tag);
-				return;
-			}
-			int newMajor=Integer.parseInt(matcher.group(1)), newMinor=Integer.parseInt(matcher.group(2)), newRevision=matcher.group(3)!=null ? Integer.parseInt(matcher.group(3)) : 0;
-			Matcher curMatcher=pattern.matcher(BuildConfig.VERSION_NAME);
-			if(!curMatcher.find()){
-				Log.w(TAG, "actuallyCheckForUpdates: current version has wrong format: "+BuildConfig.VERSION_NAME);
-				return;
-			}
-			int curMajor=Integer.parseInt(curMatcher.group(1)), curMinor=Integer.parseInt(curMatcher.group(2)), curRevision=matcher.group(3)!=null ? Integer.parseInt(curMatcher.group(3)) : 0;
-			long newVersion=((long)newMajor << 32) | ((long)newMinor << 16) | newRevision;
-			long curVersion=((long)curMajor << 32) | ((long)curMinor << 16) | curRevision;
-			if(newVersion>curVersion || forceUpdate){
-				forceUpdate=false;
-				String version=newMajor+"."+newMinor;
-				if(matcher.group(3)!=null)
-					version+="."+newRevision;
-				Log.d(TAG, "actuallyCheckForUpdates: new version: "+version);
-				for(JsonElement el:obj.getAsJsonArray("assets")){
-					JsonObject asset=el.getAsJsonObject();
-					if("application/vnd.android.package-archive".equals(asset.get("content_type").getAsString()) && "uploaded".equals(asset.get("state").getAsString())){
-						long size=asset.get("size").getAsLong();
-						String url=asset.get("browser_download_url").getAsString();
+		try{
+			JsonObject release=fetchJson(LATEST_RELEASE_URL);
+			JsonObject versionAsset=findAsset(release, VERSION_ASSET);
+			if(versionAsset==null){
+				Log.w(TAG, "actuallyCheckForUpdates: release has no "+VERSION_ASSET);
+			}else{
+				JsonObject remoteVersion=fetchJson(versionAsset.get("browser_download_url").getAsString());
+				int versionCode=remoteVersion.get("versionCode").getAsInt();
+				String versionName=remoteVersion.get("versionName").getAsString();
+				if(versionCode>BuildConfig.VERSION_CODE || forceUpdate){
+					String apkName=APK_ASSET_PREFIX+versionName+".apk";
+					JsonObject apkAsset=findAsset(release, apkName);
+					if(apkAsset==null){
+						Log.w(TAG, "actuallyCheckForUpdates: release has no "+apkName);
+					}else{
+						forceUpdate=false;
+						Log.d(TAG, "actuallyCheckForUpdates: new version: "+versionName);
+						long apkSize=apkAsset.get("size").getAsLong();
 
 						UpdateInfo info=new UpdateInfo();
-						info.size=size;
-						info.version=version;
+						info.size=apkSize;
+						info.version=versionName;
 						this.info=info;
 
 						getPrefs().edit()
-								.putLong("apkSize", size)
-								.putString("version", version)
-								.putString("apkURL", url)
+								.putLong("apkSize", apkSize)
+								.putString("version", versionName)
+								.putString("apkURL", apkAsset.get("browser_download_url").getAsString())
 								.putInt("checkedByBuild", BuildConfig.VERSION_CODE)
 								.remove("downloadID")
 								.apply();
-
-						break;
 					}
 				}
 			}
@@ -158,6 +143,25 @@ public class GithubSelfUpdaterImpl extends GithubSelfUpdater{
 			Log.w(TAG, "actuallyCheckForUpdates", x);
 		}finally{
 			setState(info==null ? UpdateState.NO_UPDATE : UpdateState.UPDATE_AVAILABLE);
+		}
+	}
+
+	private JsonObject findAsset(JsonObject release, String name){
+		for(JsonElement el:release.getAsJsonArray("assets")){
+			JsonObject asset=el.getAsJsonObject();
+			if(name.equals(asset.get("name").getAsString()))
+				return asset;
+		}
+		return null;
+	}
+
+	private JsonObject fetchJson(String url) throws IOException{
+		Request req=new Request.Builder()
+				.url(url)
+				.build();
+		Call call=MastodonAPIController.getHttpClient().newCall(req);
+		try(Response resp=call.execute()){
+			return JsonParser.parseReader(resp.body().charStream()).getAsJsonObject();
 		}
 	}
 
