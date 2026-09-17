@@ -39,7 +39,7 @@ Releases are built with an exact toolchain, so that the `release` APK can be rep
 | JDK                     | 21 (Temurin)                    |
 | Gradle                  | 8.13 (wrapper, checksum-pinned) |
 | Android Gradle Plugin   | 8.13.2                          |
-| Android SDK platform    | 37 (`compileSdk`)               |
+| Android SDK platform    | 37.0 (`compileSdk`)             |
 | Android SDK build-tools | 35.0.0                          |
 | NDK                     | not used                        |
 
