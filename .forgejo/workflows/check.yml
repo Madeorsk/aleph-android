@@ -19,6 +19,13 @@ jobs:
         with:
           java-version: 21
           distribution: temurin
+          cache: gradle
+
+      - name: Cache the Android SDK
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/sdk
+          key: android-sdk-37.0-35.0.0
 
       - name: Set up Android SDK
         uses: https://github.com/android-actions/setup-android@v3
